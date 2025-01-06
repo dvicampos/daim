@@ -1,0 +1,45 @@
+<style>
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+<h1 class="text-center">Categorías <i class="fa fa-tag"></i></h1>
+<a href="/categorias/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar categoría</a>
+<div class="table-wrapper">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Descripción</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% categorias.forEach(categoria=> { %>
+                <tr>
+                    <td>
+                        <%= categoria.nombre %>
+                    </td>
+                    <td>
+                        <%= categoria.precio %>
+                    </td>
+                    <td>
+                        <%= categoria.descripcion %>
+                    </td>
+                    <td>
+                        <%= categoria.stock %>
+                    </td>
+                    <td>
+                        <a href="/categorias/editar/<%= categoria.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
+                        <a href="/categorias/eliminar/<%= categoria.id %>"
+                            class="btn btn-danger btn-sm m-2">Eliminar</a>
+                    </td>
+                </tr>
+                <% }); %>
+        </tbody>
+    </table>
+</div>
+<a href="/" class="btn btn-secondary">Regresar</a>

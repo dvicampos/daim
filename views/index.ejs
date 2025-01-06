@@ -1,0 +1,103 @@
+<section class="content">
+    <div class="container-fluid text-center">
+        <h1>¡Bienvenido!</h1>
+        <h3 class="text-center">Accesos rapidos</h3>
+        <div class="row mt-4 justify-content-center">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>Cliente</h3>
+                        <p>Agrega clientes.</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-solid fa-note-sticky"></i>
+                    </div>
+                    <a href="/clientes" class="small-box-footer">Ir <i
+                            class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>Ventas</h3>
+                        <p>Agrega ventas.</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-solid fa-business-time"></i>
+                    </div>
+                    <a href="/casos" class="small-box-footer">Ir <i
+                            class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4 justify-content-center">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>Notas</h3>
+                        <p>Agrega notas que deseas guardar.</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-solid fa-note-sticky"></i>
+                    </div>
+                    <a href="/notas" class="small-box-footer">Ir <i
+                            class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>Avisos</h3>
+                        <p>Agrega recordatorios importantes.</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-solid fa-business-time"></i>
+                    </div>
+                    <a href="/recordatorios" class="small-box-footer">Ir <i
+                            class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<h3 class="text-center">RECORDATORIOS</h3>
+<div class="container">
+    <div class="row mt-4">
+        <% recordatorios.forEach(recordatorio => { %>
+            <% if (!recordatorio.completado) { %>
+                <% 
+                // Calcular la diferencia de días
+                const fechaFin = new Date(recordatorio.fecha_fin);
+                const hoy = new Date();
+                const diferencia = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24)); 
+
+                // Determinar la clase según la diferencia de días
+                let cardClass;
+                if (diferencia < 1) {
+                    cardClass = 'bg-secondary'; // Rojo
+                } else if (diferencia === 1) {
+                    cardClass = 'bg-danger'; // Amarillo
+                } else if (diferencia === 2) {
+                    cardClass = 'bg-warning'; // Amarillo
+                }else {
+                    cardClass = 'bg-success'; // Verde o cualquier otro color para más de 2 días
+                }
+                %>
+                <div class="col-md-6 mb-4">
+                    <div class="card text-center <%= cardClass %>">
+                        <div class="card-header">
+                            <%= recordatorio.titulo %>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text"><%= recordatorio.contenido %></p>
+                            <a href="/editar-recordatorio/<%= recordatorio.id %>" class="btn btn-primary">Editar como completada</a>
+                        </div>
+                        <div class="card-footer text-white">
+                            <%= diferencia >= 0 ? diferencia + " días restantes" : "¡Fecha cumplida!" %>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        <% }) %>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+<style>
+    .badge {
+        font-size: 1.2em; /* Tamaño del texto */
+    }
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+<h1 class="text-center">Ventas <i class="fa fa-shopping-cart"></i></h1>
+<a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar venta</a>
+<div class="table-wrapper">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Vendedor</th>
+                <th>Categorías</th>
+                <th>Ubicacion</th>
+                <th>Fecha de entrega</th>
+                <th>Fecha de devolucion</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% casos.forEach(caso => { %>
+                <tr>
+                    <td><%= caso.caso_id %></td>
+                    <td><%= caso.cliente_nombre %></td>
+                    <td><%= caso.abogado_nombre %></td>
+                    <td><%= caso.categorias_nombres %></td>
+                    <td><%= caso.descripcion %></td>
+                    <td><%= new Date(caso.fecha_entrega).toLocaleString() %></td> 
+                    <td><%= new Date(caso.fecha_devolucion).toLocaleString() %> </td>
+                    <td>
+                        <% if (caso.estado === 'Abierto') { %>
+                            <span class="badge badge-success">🔴 Abierto</span>
+                        <% } else if (caso.estado === 'Cerrado') { %>
+                            <span class="badge badge-secondary">🟢 Cerrado</span>
+                        <% } else if (caso.estado === 'Pendiente') { %>
+                            <span class="badge badge-warning">🟡 Pendiente</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <a href="/casos/editar/<%= caso.caso_id %>" class="btn btn-warning btn-sm m-2">Editar</a>
+                        <a href="/casos/eliminar/<%= caso.caso_id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
+                        <!-- Botón para descargar el PDF -->
+                        <a href="/generar-pdf/<%= caso.caso_id %>" class="btn btn-info btn-sm m-2">
+                            Ticket
+                        </a>
+                        <a target="_blank" href="/casos/ver/<%= caso.caso_id %>" class="btn btn-success btn-sm m-2">
+                            Caso
+                        </a>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+<a href="/" class="btn btn-secondary">Regresar</a>

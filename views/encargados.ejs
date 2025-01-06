@@ -1,0 +1,48 @@
+<style>
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+<h1 class="text-center">Encargados <i class="fa fa-users-gear"></i></h1>
+<a href="/encargados/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar encargado</a>
+<div class="table-wrapper">
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% encargados.forEach(encargado=> { %>
+            <tr>
+                <td>
+                    <%= encargado.id %>
+                </td>
+                <td>
+                    <%= encargado.nombre %>
+                </td>
+                <td>
+                    <%= encargado.apellido %>
+                </td>
+                <td>
+                    <%= encargado.email %>
+                </td>
+                <td>
+                    <%= encargado.telefono %>
+                </td>
+                <td>
+                    <a href="/encargados/editar/<%= encargado.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
+                    <a href="/encargados/eliminar/<%= encargado.id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
+                </td>
+            </tr>
+            <% }); %>
+    </tbody>
+</table>
+</div>
+<a href="/" class="btn btn-secondary">Regresar</a>
