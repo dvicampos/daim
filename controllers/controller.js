@@ -410,11 +410,19 @@ exports.editarCasoPost = (req, res) => {
 
 exports.eliminarCaso = (req, res) => {
     const { id } = req.params;
-    db.query('DELETE FROM casos WHERE id = ?', [id], (err) => {
+
+    // Primero, eliminar las filas en caso_categorias
+    db.query('DELETE FROM caso_categorias WHERE caso_id = ?', [id], (err) => {
         if (err) throw err;
-        res.redirect('/casos');
+
+        // Después, eliminar el caso
+        db.query('DELETE FROM casos WHERE id = ?', [id], (err) => {
+            if (err) throw err;
+            res.redirect('/casos');
+        });
     });
 };
+
 
 const pdf = require('html-pdf');
 const QRCode = require('qrcode');

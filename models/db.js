@@ -1,12 +1,11 @@
 const mysql = require('mysql2');
 
 const db = mysql.createConnection({
-    host: '108.171.206.154',
+    host: 'localhost',
     user: 'aseashvt_david',
     password: 'v_)hj(inH9b{',
-    database: 'aseashvt_dbdaim',
-    port: 3306,
-    connectTimeout: 20000
+    database: 'aseashvt_abogados_asociados',
+    port: 3306
 });
 
 db.connect(err => {

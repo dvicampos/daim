@@ -12,12 +12,12 @@
         </select>
     </div>
     <div class="form-group">
-        <label for="abogado_id">Abogado</label>
+        <label for="abogado_id">Encargado</label>
         <select name="abogado_id" class="form-control" required>
-            <option value="">Seleccionar Abogado</option>
-            <% abogados.forEach(abogado => { %>
-                <option value="<%= abogado.id %>" <%= caso.abogado_id === abogado.id ? 'selected' : '' %>>
-                    <%= abogado.nombre %> <%= abogado.apellido %>
+            <option value="">Seleccionar Encargado</option>
+            <% encargados.forEach(encargado => { %>
+                <option value="<%= encargado.id %>" <%= caso.abogado_id === encargado.id ? 'selected' : '' %>>
+                    <%= encargado.nombre %> <%= encargado.apellido %>
                 </option>
             <% }); %>
         </select>
