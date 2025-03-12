@@ -66,10 +66,20 @@
                                 <input class="form-control" type="password" name="password" placeholder="Contraseña" required>
                             </div>
                         </div>
+                        <label>Grupo:</label>
+                        <select name="grupo_id">
+                            <option value="">Selecciona un grupo</option>
+                            <% grupos.forEach(grupo => { %>
+                                <option value="<%= grupo.id %>"><%= grupo.nombre_empresa %></option>
+                            <% }); %>
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Registrarse</button>
                 </form>
                 <p class="mt-3 text-center">Ya tengo usuario <a href="/login">iniciar</a></p>
+                <p class="text-center">
+                    ¿No encuentras tu grupo? <a href="/create-group">Crea uno aquí</a>
+                </p>
             </div>
         </div>
     </div>

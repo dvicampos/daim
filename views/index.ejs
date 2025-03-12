@@ -1,6 +1,14 @@
 <section class="content">
     <div class="container-fluid text-center">
-        <h1>¡Bienvenido!</h1>
+        <div class="card-body text-center p-4">
+            <h1 class="font-weight-bold text-primary">
+                Bienvenido, <%= usuario.nombre %> <%= usuario.apellido %>
+            </h1>
+            <p class="lead text-secondary mt-3">
+                <i class="fas fa-building"></i> Grupo: 
+                <span class="font-weight-bold text-dark"><%= usuario.nombre_empresa || 'Sin grupo' %></span>
+            </p>
+        </div>
         <h3 class="text-center">Accesos rapidos</h3>
         <div class="row mt-4 justify-content-center">
             <div class="col-lg-3 col-6">

@@ -63,4 +63,8 @@ router.get('/editar-recordatorio/:id',isAuthenticated, controller.obtenerRecorda
 router.post('/editar-recordatorio/:id',isAuthenticated, controller.editarRecordatorio);
 router.get('/eliminar-recordatorio/:id',isAuthenticated, controller.eliminarRecordatorio);
 
+// Rutas para Grupos
+router.get('/create-group', controller.createGroup);
+router.post('/create-group', controller.createGroupPost);
+
 module.exports = router;

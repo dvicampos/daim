@@ -3,31 +3,68 @@ const bcrypt = require('bcrypt');
 
 // Página principal
 exports.index = (req, res) => {
-    db.query('SELECT * FROM recordatorios', (err, results) => {
-        if (err) throw err;
-        res.render('index', { recordatorios: results });
+    if (!req.session.encargadoId) {
+        return res.redirect('/login');
+    }
+
+    db.query('SELECT * FROM recordatorios', (err, recordatorios) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error al obtener los recordatorios');
+        }
+
+        db.query(
+            `SELECT encargados.nombre, encargados.apellido, grupos.nombre_empresa 
+            FROM encargados 
+            LEFT JOIN grupos ON encargados.grupo_id = grupos.id 
+            WHERE encargados.id = ?`,
+            [req.session.encargadoId],
+            (err, results) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Error al obtener los datos del usuario');
+                }
+
+                if (results.length === 0) {
+                    return res.redirect('/login');
+                }
+
+                const usuario = results[0]; 
+
+                res.render('index', { 
+                    recordatorios, 
+                    usuario
+                });
+            }
+        );
     });
-    // res.render('index');
 };
+
 
 // Registro de abogados
 exports.register = (req, res) => {
-    res.render('register', {layout: false});
+    db.query('SELECT * FROM grupos', (err, grupos) => {
+        if (err) {
+            console.error(err);
+            return res.render('register', { layout: false, grupos: [] });
+        }
+        res.render('register', { layout: false, grupos });
+    });
 };
 
-exports.registerPost = async (req, res) => {
-    const { nombre, apellido, email, telefono, especialidad, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+// exports.registerPost = async (req, res) => {
+//     const { nombre, apellido, email, telefono, especialidad, password } = req.body;
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password) VALUES (?, ?, ?, ?, ?, ?)',
-        [nombre, apellido, email, telefono, especialidad, hashedPassword], (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.redirect('/register');
-            }
-            res.redirect('/login');
-        });
-};
+//     db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password) VALUES (?, ?, ?, ?, ?, ?)',
+//         [nombre, apellido, email, telefono, especialidad, hashedPassword], (err, results) => {
+//             if (err) {
+//                 console.error(err);
+//                 return res.redirect('/register');
+//             }
+//             res.redirect('/login');
+//         });
+// };
 
 // Ingreso de encargados
 exports.login = (req, res) => {
@@ -50,6 +87,50 @@ exports.loginPost = (req, res) => {
             res.redirect('/login');
         }
     });
+};
+
+exports.createGroup = (req, res) => {
+    res.render('createGroup', { layout: false });
+};
+
+exports.createGroupPost = (req, res) => {
+    const { nombre_empresa, rubro, descripcion, ubicacion } = req.body;
+
+    db.query('INSERT INTO grupos (nombre_empresa, rubro, descripcion, ubicacion) VALUES (?, ?, ?, ?)',
+        [nombre_empresa, rubro, descripcion, ubicacion],
+        (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.redirect('/create-group');
+            }
+            res.redirect('/register');
+        }
+    );
+};
+
+exports.registerPost = async (req, res) => {
+    const { nombre, apellido, email, telefono, especialidad, password, grupo_id } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [nombre, apellido, email, telefono, especialidad, hashedPassword, grupo_id], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.redirect('/register');
+            }
+
+            const encargadoId = results.insertId;
+            if (grupo_id) {
+                db.query('INSERT INTO grupo_encargado (grupo_id, encargado_id) VALUES (?, ?)',
+                    [grupo_id, encargadoId],
+                    (err) => {
+                        if (err) {
+                            console.error(err);
+                        }
+                    });
+            }
+            res.redirect('/login');
+        });
 };
 
 // Cerrar sesión
