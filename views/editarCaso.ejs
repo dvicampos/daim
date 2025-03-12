@@ -1,4 +1,4 @@
-<h1 class="text-center">Editar caso</h1>
+<h1 class="text-center">Editar renta</h1>
 <form action="/casos/editar/<%= caso.id %>" method="POST">
     <div class="form-group">
         <label for="cliente_id">Cliente</label>
@@ -14,9 +14,10 @@
     <div class="form-group">
         <label for="abogado_id">Encargado</label>
         <select name="abogado_id" class="form-control" required>
-            <option value="">Seleccionar Encargado</option>
+            <option value="">Seleccionar encargado</option>
             <% encargados.forEach(encargado => { %>
-                <option value="<%= encargado.id %>" <%= caso.abogado_id === encargado.id ? 'selected' : '' %>>
+                <option value="<%= encargado.id %>" <%= caso.abogado_id === encargado.id ? 'selected' 
+: '' %>>
                     <%= encargado.nombre %> <%= encargado.apellido %>
                 </option>
             <% }); %>
@@ -56,7 +57,7 @@
         <input type="datetime-local" name="fecha_devolucion" class="form-control" required value="<%= new Date(caso.fecha_devolucion).toISOString().substring(0, 16) %>">
     </div>
     <div class="form-group">
-        <label for="precio">Precio Total del Caso</label>
+        <label for="precio">Precio Total de renta</label>
         <input type="number" name="precio" class="form-control" step="0.01" value="<%= caso.precio %>" readonly>
     </div>
 

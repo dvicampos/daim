@@ -7,30 +7,32 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 2px;
+	    font-size: 12px;
+   	    line-height: 1.5;
         }
         .container {
             margin: auto;
             border: 1px solid #ddd;
-            padding: 20px;
+            padding: 5px;
         }
-        h1 {
+        h1,h2 {
             text-align: center;
         }
         .header {
             background-color: #007bff;
             color: white;
-            padding: 10px;
+            padding: 1px;
             font-weight: bold;
         }
         .table-container {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 2px;
         }
         .table-container th, .table-container td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 1px;
             text-align: left;
         }
         .table-container th {
@@ -40,14 +42,13 @@
         .total {
             text-align: right;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 2px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ALQUILADORA DAIM</h1>
-        <div class="header">Ticket de renta</div>
+        <h1>Alquiladora DAIM - Ticket de renta</h1>
         
         <table class="table-container">
             <tr>
@@ -68,7 +69,7 @@
             </tr>
             <tr>
                 <td>Ciudad, estado, código</td>
-                <td>Tlaxcala, Tlax. 90180 Sn Cosme Atlamaxad Fax: Número de fax</td>
+                <td>Tlaxcala, Tlax. 90180 San Cosme Atlamaxac</td>
             </tr>
             <tr>
                 <td>Encargado</td>
@@ -76,7 +77,7 @@
             </tr>
             <tr>
                 <td>Sitio web</td>
-                <td><a href="https://alquiladora-daim.onrender.com/">alquiladora-daim.onrender.com</a></td>
+                <td><a href="https://daim.com.mexwebtechnological.com/">daim.com</a></td>
             </tr>
                 <th>Informacion cliente</th>
                 <th>Detalles</th>
@@ -99,45 +100,77 @@
             </tr>
             <tr>
                 <td>Fecha de la nota</td>
-                <td><%= caso.fecha_creacion %></td>
+                <td><%= new Date(caso.fecha_creacion).toLocaleString() %></td>
             </tr>
             <tr>
                 <td>Fecha de entrega</td>
-                <td><%= caso.fecha_entrega %></td>
+                <td><%= new Date(caso.fecha_entrega).toLocaleString() %></td>
             </tr>
             <tr>
                 <td>Fecha de devolucion</td>
-                <td><%= caso.fecha_devolucion %></td>
+                <td><%= new Date(caso.fecha_devolucion).toLocaleString() %></td>
             </tr>
             <tr>
                 <td>Status pedido</td>
                 <td><%= caso.estado %></td>
             </tr>
         </table>
+
+        <h2>Detalles del alquiler</h2>
+        <table class="table-container">
+            <thead>
+                <tr>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Precio por unidad</th>
+                    <th>Precio total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% caso.categorias_nombres.split(', ').forEach((categoria, index) => { %>
+                    <tr>
+                        <td><%= categoria %></td>
+                        <td><%= caso.categorias_cantidades.split(', ')[index] %></td>
+                        <td>$<%= caso.categorias_precios.split(', ')[index] %></td>
+                        <td>$<%= (parseFloat(caso.categorias_precios.split(', ')[index]) * 
+parseInt(caso.categorias_cantidades.split(', ')[index])).toFixed(2) %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <p class="total">Total a pagar: <strong>$<%= caso.precio %></strong></p>
+        <p class="total">Depósito recibido: <strong>$_____________</strong></p>
         
-        <p><strong>Código QR:</strong></p>
+        <p><strong>Código QR de mi venta:</strong></p>
         <img src="<%= qrCodeUrl %>" alt="Código QR">
         
-        <p class="total">Subtotal de la nota: <strong>$<%= caso.precio %></strong></p>
-        <p class="total">Impuesto sobre las ventas: <strong>$0.00</strong></p>
-        <p class="total">Depósito recibido: <strong>$</strong></p>
-        <p class="total">TOTAL A PAGAR: <strong>$<%= caso.precio %></strong></p>
-        
-        <p>Derechos reservados ALQUILADORA DAIM.</p>
         <div>
             <ul>
-                <li>El cliente se compromete a devolver el material en las mismas condiciones en las que fue entregado, sin daños ni alteraciones.</li>
-                <li>El cliente es responsable del cuidado y conservación del material durante el periodo de alquiler.</li>
-                <li>En caso de daño o pérdida del material, el cliente deberá cubrir el costo total de la reparación o reemplazo del mismo.</li>
-                <li>Está prohibido realizar modificaciones en el material alquilado sin el consentimiento previo y por escrito de la alquiladora.</li>
-                <li>El cliente debe utilizar el material exclusivamente para los fines establecidos y de acuerdo con las instrucciones de uso proporcionadas.</li>
-                <li>En caso de maltrato, uso inapropiado o negligencia, el cliente será responsable de los daños y deberá indemnizar a la alquiladora por los costos derivados de la reparación o reemplazo.</li>
-                <li>El cliente debe informar de inmediato cualquier daño o defecto en el material al momento de la devolución o durante el periodo de alquiler.</li>
-                <li>El material debe ser devuelto en el tiempo acordado. El retraso en la devolución podrá generar cargos adicionales.</li>
-                <li>En caso de no devolver el material alquilado, el cliente se compromete a pagar el costo total del mismo.</li>
-                <li>El cliente es responsable de mantener el material limpio y en buen estado durante su uso.</li>
+                <li>El cliente se compromete a devolver el material en las mismas condiciones en las 
+que fue entregado, sin daños ni alteraciones.</li>
+                <li>El cliente es responsable del cuidado y conservación del material durante el 
+periodo de alquiler.</li>
+                <li>En caso de daño o pérdida del material, el cliente deberá cubrir el costo total 
+de la reparación o reemplazo del mismo.</li>
+                <li>Está prohibido realizar modificaciones en el material alquilado sin el 
+consentimiento previo y por escrito de la alquiladora.</li>
+                <li>El cliente debe utilizar el material exclusivamente para los fines establecidos y 
+de acuerdo con las instrucciones de uso proporcionadas.</li>
+                <li>En caso de maltrato, uso inapropiado o negligencia, el cliente será responsable 
+de los daños y deberá indemnizar a la alquiladora por los costos derivados de la reparación o 
+reemplazo.</li>
+                <li>El cliente debe informar de inmediato cualquier daño o defecto en el material al 
+momento de la devolución o durante el periodo de alquiler.</li>
+                <li>El material debe ser devuelto en el tiempo acordado. El retraso en la devolución 
+podrá generar cargos adicionales.</li>
+                <li>En caso de no devolver el material alquilado, el cliente se compromete a pagar el 
+costo total del mismo.</li>
+                <li>El cliente es responsable de mantener el material limpio y en buen estado durante 
+su uso.</li>
             </ul>
-        </div>  
+        </div> 
+        <h2>Derechos reservados Alquiladora DAIM.</h2> 
     </div>
 </body>
 </html>
+

@@ -44,7 +44,7 @@ exports.loginPost = (req, res) => {
         const encargado = results[0];
         const match = await bcrypt.compare(password, encargado.password);
         if (match) {
-            req.session.encargadoId = encargado.id;
+            req.session.encargadoId = encargado.id; // Guardar ID en sesión
             res.redirect('/');
         } else {
             res.redirect('/login');
@@ -63,6 +63,8 @@ exports.logout = (req, res) => {
 };
 
 // CLIENTES 
+
+// Otras funciones existentes para Clientes, encargados, Casos y Categorías...
 exports.clientes = (req, res) => {
     db.query('SELECT * FROM clientes', (err, results) => {
         if (err) throw err;
@@ -109,6 +111,7 @@ exports.eliminarCliente = (req, res) => {
             console.error('Error al eliminar relaciones en casos:', err);
             return res.status(500).send('Error al eliminar relaciones del cliente');
         }
+
         db.query('DELETE FROM clientes WHERE id = ?', [id], (err) => {
             if (err) {
                 console.error('Error al eliminar el cliente:', err);
@@ -124,6 +127,7 @@ exports.eliminarCliente = (req, res) => {
 
 
 // encargados
+
 exports.encargados = (req, res) => {
     const query = 'SELECT * FROM encargados';
     db.query(query, (err, results) => {
@@ -187,6 +191,7 @@ exports.eliminarEncargado = (req, res) => {
 
 
 // CASOS 
+
 exports.casos = (req, res) => {
     const query = `
         SELECT 
@@ -220,8 +225,9 @@ exports.casos = (req, res) => {
 };
 
 exports.casoIndividual = (req, res) => {
-    const casoId = req.params.id; 
+    const casoId = req.params.id; // Obtener el ID del caso de la URL
 
+    // Consulta SQL actualizada para obtener el caso con sus categorías y cantidades asociadas
     const query = `
         SELECT 
             casos.id AS caso_id, 
@@ -255,6 +261,7 @@ exports.casoIndividual = (req, res) => {
     db.query(query, [casoId], (err, results) => {
         if (err) throw err;
 
+        // Verificar si se encontró el caso
         if (results.length > 0) {
             res.render('casoIndividual', { caso: results[0], layout: false });
         } else {
@@ -411,22 +418,28 @@ exports.crearCaso = (req, res) => {
 exports.editarCaso = (req, res) => {
     const { id } = req.params;
 
+    // Obtener los detalles del caso
     db.query('SELECT * FROM casos WHERE id = ?', [id], (err, results) => {
         if (err) throw err;
         const caso = results[0];
 
+        // Obtener las categorías y cantidades asociadas con el caso
         db.query('SELECT categoria_id, cantidad FROM caso_categorias WHERE caso_id = ?', [id], (err, casoCategorias) => {
             if (err) throw err;
 
+            // Obtener la lista de clientes
             db.query('SELECT * FROM clientes', (err, clientes) => {
                 if (err) throw err;
 
+                // Obtener la lista de encargados
                 db.query('SELECT * FROM encargados', (err, encargados) => {
                     if (err) throw err;
 
+                    // Obtener la lista de categorías
                     db.query('SELECT * FROM categorias', (err, categorias) => {
                         if (err) throw err;
 
+                        // Renderizar la vista con el caso, la lista de clientes, encargados, categorías y las categorías del caso
                         res.render('editarCaso', { caso, casoCategorias, clientes, encargados, categorias });
                     });
                 });
@@ -442,13 +455,16 @@ exports.editarCasoPost = (req, res) => {
     const categoriasArray = Array.isArray(categoria_id) ? categoria_id : [categoria_id];
     const cantidadesArray = Array.isArray(categoria_cantidad) ? categoria_cantidad : [categoria_cantidad];
 
+    // Actualizar el caso
     db.query('UPDATE casos SET cliente_id = ?, abogado_id = ?, descripcion = ?, estado = ?, precio = ?, fecha_entrega = ?, fecha_devolucion = ? WHERE id = ?',
         [cliente_id, abogado_id, descripcion, estado, precio, fecha_entrega, fecha_devolucion, id], (err) => {
             if (err) throw err;
 
+            // Eliminar categorías existentes para el caso
             db.query('DELETE FROM caso_categorias WHERE caso_id = ?', [id], (err) => {
                 if (err) throw err;
 
+                // Insertar categorías actualizadas para el caso
                 const categoriaQueries = categoriasArray.map((categoriaId, index) => {
                     const cantidad = parseFloat(cantidadesArray[index]);
                     return new Promise((resolve, reject) => {
@@ -478,9 +494,11 @@ exports.editarCasoPost = (req, res) => {
 exports.eliminarCaso = (req, res) => {
     const { id } = req.params;
 
+    // Primero, eliminar las filas en caso_categorias
     db.query('DELETE FROM caso_categorias WHERE caso_id = ?', [id], (err) => {
         if (err) throw err;
 
+        // Después, eliminar el caso
         db.query('DELETE FROM casos WHERE id = ?', [id], (err) => {
             if (err) throw err;
             res.redirect('/casos');
@@ -542,6 +560,7 @@ exports.generarPDF = (req, res) => {
                     }
                 };
 
+                // Crear el PDF
                 pdf.create(html, options).toBuffer((err, buffer) => {
                     if (err) return res.send(err);
                     res.set({
@@ -557,6 +576,7 @@ exports.generarPDF = (req, res) => {
 
 
 // CATEGORIAS 
+
 exports.categorias = (req, res) => {
     db.query('SELECT * FROM categorias', (err, results) => {
         if (err) throw err;
@@ -679,6 +699,7 @@ exports.leerRecordatorios = (req, res) => {
     db.query('SELECT * FROM recordatorios', (err, results) => {
         if (err) throw err;
 
+        // Formatear las fechas
         const recordatorios = results.map(recordatorio => {
             return {
                 ...recordatorio,

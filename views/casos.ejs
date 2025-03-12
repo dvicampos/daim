@@ -7,8 +7,9 @@
         -webkit-overflow-scrolling: touch;
     }
 </style>
-<h1 class="text-center">Ventas <i class="fa fa-shopping-cart"></i></h1>
-<a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar venta</a>
+<h1 class="text-center">Rentas <i class="fa fa-shopping-cart"></i></h1>
+<a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar 
+renta</a>
 <div class="table-wrapper">
     <table class="table table-bordered">
         <thead>
@@ -18,6 +19,7 @@
                 <th>Vendedor</th>
                 <th>Categorías</th>
                 <th>Ubicacion</th>
+		<th>Precio</th>
                 <th>Fecha de entrega</th>
                 <th>Fecha de devolucion</th>
                 <th>Estado</th>
@@ -32,6 +34,7 @@
                     <td><%= caso.abogado_nombre %></td>
                     <td><%= caso.categorias_nombres %></td>
                     <td><%= caso.descripcion %></td>
+		    <td><%= caso.precio %></td>
                     <td><%= new Date(caso.fecha_entrega).toLocaleString() %></td> 
                     <td><%= new Date(caso.fecha_devolucion).toLocaleString() %> </td>
                     <td>
@@ -51,7 +54,7 @@
                             Ticket
                         </a>
                         <a target="_blank" href="/casos/ver/<%= caso.caso_id %>" class="btn btn-success btn-sm m-2">
-                            Caso
+                            Ver info
                         </a>
                     </td>
                 </tr>

@@ -1,4 +1,4 @@
-<h1 class="text-center">Crear caso</h1>
+<h1 class="text-center">Crear renta</h1>
 <form action="/casos/crear" method="POST">
     <div class="form-group">
         <label for="cliente_id">Cliente</label>
@@ -35,8 +35,9 @@
         <% }); %>
     </div>
     <div class="form-group">
-        <label for="descripcion">Descripción</label>
-        <textarea name="descripcion" class="form-control" placeholder="Descripción" required></textarea>
+        <label for="descripcion">Ubicacion</label>
+        <textarea name="descripcion" class="form-control" placeholder="Ubicacion de entrega" 
+required></textarea>
     </div>
     <div class="form-group">
         <label for="estado">Estado</label>
@@ -56,7 +57,7 @@
         <input type="datetime-local" name="fecha_devolucion" class="form-control" required>
     </div>
     <div class="form-group">
-        <label for="precio">Precio Total del Caso</label>
+        <label for="precio">Precio Total de renta</label>
         <input type="number" name="precio" class="form-control" step="0.01" readonly>
     </div>
 
