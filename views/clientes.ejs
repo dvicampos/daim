@@ -15,6 +15,7 @@
             <th>Apellido</th>
             <th>Email</th>
             <th>Teléfono</th>
+            <th>Grupo ID</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -26,6 +27,7 @@
                 <td><%= cliente.apellido %></td>
                 <td><%= cliente.email %></td>
                 <td><%= cliente.telefono %></td>
+                <td><%= cliente.grupo_nombre || 'Sin grupo' %></td>
                 <td>
                     <a href="/clientes/editar/<%= cliente.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
                     <a href="/clientes/eliminar/<%= cliente.id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>

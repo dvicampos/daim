@@ -15,6 +15,7 @@
             <th>Apellido</th>
             <th>Email</th>
             <th>Teléfono</th>
+            <th>Grupo</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -35,6 +36,9 @@
                 </td>
                 <td>
                     <%= encargado.telefono %>
+                </td>
+                <td>
+                    <%= encargado.grupo_nombre ? encargado.grupo_nombre : 'Sin grupo' %>
                 </td>
                 <td>
                     <a href="/encargados/editar/<%= encargado.id %>" class="btn btn-warning btn-sm m-2">Editar</a>

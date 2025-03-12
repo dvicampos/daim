@@ -19,10 +19,11 @@ renta</a>
                 <th>Vendedor</th>
                 <th>Categorías</th>
                 <th>Ubicacion</th>
-		<th>Precio</th>
+		        <th>Precio</th>
                 <th>Fecha de entrega</th>
                 <th>Fecha de devolucion</th>
                 <th>Estado</th>
+                <th>Grupo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -46,6 +47,7 @@ renta</a>
                             <span class="badge badge-warning">🟡 Pendiente</span>
                         <% } %>
                     </td>
+                    <td><%= caso.grupo_nombre ? caso.grupo_nombre : 'Sin grupo' %></td>
                     <td>
                         <a href="/casos/editar/<%= caso.caso_id %>" class="btn btn-warning btn-sm m-2">Editar</a>
                         <a href="/casos/eliminar/<%= caso.caso_id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>

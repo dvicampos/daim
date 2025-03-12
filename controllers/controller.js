@@ -52,20 +52,6 @@ exports.register = (req, res) => {
     });
 };
 
-// exports.registerPost = async (req, res) => {
-//     const { nombre, apellido, email, telefono, especialidad, password } = req.body;
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password) VALUES (?, ?, ?, ?, ?, ?)',
-//         [nombre, apellido, email, telefono, especialidad, hashedPassword], (err, results) => {
-//             if (err) {
-//                 console.error(err);
-//                 return res.redirect('/register');
-//             }
-//             res.redirect('/login');
-//         });
-// };
-
 // Ingreso de encargados
 exports.login = (req, res) => {
     res.render('login', {layout: false});
@@ -82,6 +68,12 @@ exports.loginPost = (req, res) => {
         const match = await bcrypt.compare(password, encargado.password);
         if (match) {
             req.session.encargadoId = encargado.id;
+            req.session.encargado = {
+                id: encargado.id,
+                nombre: encargado.nombre,
+                apellido: encargado.apellido,
+                grupo_id: encargado.grupo_id,
+            };
             res.redirect('/');
         } else {
             res.redirect('/login');
@@ -145,24 +137,49 @@ exports.logout = (req, res) => {
 
 // CLIENTES 
 exports.clientes = (req, res) => {
-    db.query('SELECT * FROM clientes', (err, results) => {
-        if (err) throw err;
+    const sql = `
+        SELECT clientes.*, grupos.nombre_empresa AS grupo_nombre
+        FROM clientes
+        LEFT JOIN grupos ON clientes.grupo_id = grupos.id
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error al obtener clientes');
+        }
         res.render('clientes', { clientes: results });
     });
 };
+
 
 exports.crearCliente = (req, res) => {
     res.render('crearCliente');
 };
 
 exports.crearClientePost = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
     const { nombre, apellido, email, telefono, direccion } = req.body;
-    db.query('INSERT INTO clientes (nombre, apellido, email, telefono, direccion) VALUES (?, ?, ?, ?, ?)',
-        [nombre, apellido, email, telefono, direccion], (err) => {
-            if (err) throw err;
+    const grupo_id = req.session.encargado.grupo_id;
+
+    db.query(
+        'INSERT INTO clientes (nombre, apellido, email, telefono, direccion, grupo_id) VALUES (?, ?, ?, ?, ?, ?)',
+        [nombre, apellido, email, telefono, direccion, grupo_id],
+        (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.redirect('/crearCliente');
+            }
+
             res.redirect('/clientes');
-        });
+        }
+    );
 };
+
 
 exports.editarCliente = (req, res) => {
     const { id } = req.params;
@@ -206,7 +223,7 @@ exports.eliminarCliente = (req, res) => {
 
 // encargados
 exports.encargados = (req, res) => {
-    const query = 'SELECT * FROM encargados';
+    const query = 'SELECT encargados.*, grupos.nombre_empresa AS grupo_nombre FROM encargados LEFT JOIN grupos ON encargados.grupo_id = grupos.id';
     db.query(query, (err, results) => {
         if (err) throw err;
         res.render('encargados', { encargados: results });
@@ -274,6 +291,7 @@ exports.casos = (req, res) => {
             casos.id AS caso_id, 
             clientes.nombre AS cliente_nombre, 
             encargados.nombre AS abogado_nombre, 
+            grupos.nombre_empresa AS grupo_nombre, 
             GROUP_CONCAT(categorias.nombre SEPARATOR ', ') AS categorias_nombres, 
             casos.descripcion, 
             casos.estado,
@@ -286,16 +304,21 @@ exports.casos = (req, res) => {
             clientes ON casos.cliente_id = clientes.id 
         JOIN 
             encargados ON casos.abogado_id = encargados.id 
+        LEFT JOIN 
+            grupos ON casos.grupo_id = grupos.id 
         JOIN 
             caso_categorias ON casos.id = caso_categorias.caso_id 
         JOIN 
             categorias ON caso_categorias.categoria_id = categorias.id
         GROUP BY 
-            casos.id, clientes.nombre, encargados.nombre, casos.descripcion, casos.estado, casos.precio, casos.fecha_entrega, casos.fecha_devolucion
+            casos.id, clientes.nombre, encargados.nombre, grupos.nombre_empresa, casos.descripcion, casos.estado, casos.precio, casos.fecha_entrega, casos.fecha_devolucion
     `;
 
     db.query(query, (err, results) => {
-        if (err) throw err;
+        if (err) {
+            console.error('Error al obtener los casos:', err);
+            return res.status(500).send('Error al obtener los casos.');
+        }
         res.render('casos', { casos: results });
     });
 };
@@ -347,6 +370,13 @@ exports.casoIndividual = (req, res) => {
 
 exports.crearCasoPost = (req, res) => {
     const { cliente_id, abogado_id, descripcion, estado, categoria_id, categoria_cantidad, fecha_entrega, fecha_devolucion } = req.body;
+    
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
 
     const categoriasArray = Array.isArray(categoria_id) ? categoria_id : [categoria_id];
     const cantidadesArray = Array.isArray(categoria_cantidad) ? categoria_cantidad : [categoria_cantidad];
@@ -357,7 +387,7 @@ exports.crearCasoPost = (req, res) => {
     db.query('SELECT id, precio FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
         if (err) {
             console.error('Error al obtener precios de categorías:', err);
-            throw err;
+            return res.status(500).send('Error al obtener precios de categorías.');
         }
 
         let precioTotal = 0;
@@ -369,11 +399,11 @@ exports.crearCasoPost = (req, res) => {
         precioTotal = precioTotal.toFixed(2);
         console.log('Precio total calculado:', precioTotal);
 
-        db.query('INSERT INTO casos (cliente_id, abogado_id, descripcion, estado, precio, fecha_entrega, fecha_devolucion) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [cliente_id, abogado_id, descripcion, estado, precioTotal, fecha_entrega, fecha_devolucion], (err, result) => {
+        db.query('INSERT INTO casos (cliente_id, abogado_id, descripcion, estado, precio, fecha_entrega, fecha_devolucion, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [cliente_id, abogado_id, descripcion, estado, precioTotal, fecha_entrega, fecha_devolucion, grupo_id], (err, result) => {
                 if (err) {
                     console.error('Error al insertar el caso:', err);
-                    throw err;
+                    return res.status(500).send('Error al insertar el caso.');
                 }
 
                 console.log('Caso insertado con ID:', result.insertId);
@@ -381,8 +411,9 @@ exports.crearCasoPost = (req, res) => {
 
                 const categoriaQueries = categoriasArray.map((categoriaId, index) => {
                     const cantidad = parseFloat(cantidadesArray[index]);
+                    const grupo_id = req.session.encargado.grupo_id;
                     return new Promise((resolve, reject) => {
-                        db.query('INSERT INTO caso_categorias (caso_id, categoria_id, cantidad) VALUES (?, ?, ?)', [casoId, categoriaId, cantidad], (err) => {
+                        db.query('INSERT INTO caso_categorias (caso_id, categoria_id, cantidad, grupo_id) VALUES (?, ?, ?, ?)', [casoId, categoriaId, cantidad, grupo_id], (err) => {
                             if (err) {
                                 console.error('Error al insertar en caso_categorias:', err);
                                 reject(err);
@@ -400,81 +431,11 @@ exports.crearCasoPost = (req, res) => {
                     })
                     .catch(err => {
                         console.error('Error al insertar categorías del caso:', err);
-                        throw err;
+                        res.status(500).send('Error al insertar categorías del caso.');
                     });
             });
     });
 };
-
-// exports.crearCasoPost = (req, res) => {
-//     const { cliente_id, abogado_id, descripcion, estado, categoria_id, categoria_cantidad, fecha_entrega, fecha_devolucion } = req.body;
-
-//     const categoriasArray = Array.isArray(categoria_id) ? categoria_id : [categoria_id];
-//     const cantidadesArray = Array.isArray(categoria_cantidad) ? categoria_cantidad : [categoria_cantidad];
-
-//     console.log('Categorías seleccionadas:', categoriasArray);
-//     console.log('Cantidades seleccionadas:', cantidadesArray);
-
-//     const fechaEntrega = new Date(fecha_entrega);
-//     const fechaDevolucion = new Date(fecha_devolucion);
-//     const numDias = (fechaDevolucion - fechaEntrega) / (1000 * 60 * 60 * 24) + 1;
-
-//     db.query('SELECT id, precio FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
-//         if (err) {
-//             console.error('Error al obtener precios de categorías:', err);
-//             throw err;
-//         }
-
-//         let precioTotal = 0;
-//         resultados.forEach((categoria, index) => {
-//             const cantidad = parseFloat(cantidadesArray[index]);
-//             precioTotal += categoria.precio * cantidad;
-//         });
-//         console.log("precio de renta", precioTotal)
-//         console.log("numero de dias", numDias)
-//         // redondear 
-//         let dias = Math.round(numDias)
-//         precioTotal = (precioTotal * dias).toFixed(2);
-//         console.log('Precio total calculado:', precioTotal);
-
-//         db.query('INSERT INTO casos (cliente_id, abogado_id, descripcion, estado, precio, fecha_entrega, fecha_devolucion) VALUES (?, ?, ?, ?, ?, ?, ?)',
-//             [cliente_id, abogado_id, descripcion, estado, precioTotal, fecha_entrega, fecha_devolucion], (err, result) => {
-//                 if (err) {
-//                     console.error('Error al insertar el caso:', err);
-//                     throw err;
-//                 }
-
-//                 console.log('Caso insertado con ID:', result.insertId);
-//                 const casoId = result.insertId;
-
-//                 const categoriaQueries = categoriasArray.map((categoriaId, index) => {
-//                     const cantidad = parseFloat(cantidadesArray[index]);
-//                     return new Promise((resolve, reject) => {
-//                         db.query('INSERT INTO caso_categorias (caso_id, categoria_id, cantidad) VALUES (?, ?, ?)', [casoId, categoriaId, cantidad], (err) => {
-//                             if (err) {
-//                                 console.error('Error al insertar en caso_categorias:', err);
-//                                 reject(err);
-//                             } else {
-//                                 resolve();
-//                             }
-//                         });
-//                     });
-//                 });
-
-//                 Promise.all(categoriaQueries)
-//                     .then(() => {
-//                         console.log('Categorías del caso insertadas correctamente.');
-//                         res.redirect('/casos');
-//                     })
-//                     .catch(err => {
-//                         console.error('Error al insertar categorías del caso:', err);
-//                         throw err;
-//                     });
-//             });
-//     });
-// };
-
-
 
 exports.crearCaso = (req, res) => {
     db.query('SELECT * FROM clientes', (err, clientes) => {
@@ -639,11 +600,22 @@ exports.generarPDF = (req, res) => {
 
 // CATEGORIAS 
 exports.categorias = (req, res) => {
-    db.query('SELECT * FROM categorias', (err, results) => {
-        if (err) throw err;
+    const query = `
+        SELECT categorias.*, grupos.nombre_empresa AS grupo_nombre 
+        FROM categorias 
+        LEFT JOIN grupos ON categorias.grupo_id = grupos.id
+    `;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error al obtener las categorías:', err);
+            return res.status(500).send('Error al obtener las categorías.');
+        }
+
         res.render('categorias', { categorias: results });
     });
 };
+
 
 exports.crearCategoria = (req, res) => {
     res.render('crearCategoria');
@@ -651,9 +623,20 @@ exports.crearCategoria = (req, res) => {
 
 exports.crearCategoriaPost = (req, res) => {
     const { nombre, precio, descripcion, stock } = req.body;
-    db.query('INSERT INTO categorias (nombre, precio, descripcion, stock) VALUES (?, ?, ?, ?)',
-        [nombre, precio, descripcion, stock], (err) => {
-            if (err) throw err;
+
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+
+    db.query('INSERT INTO categorias (nombre, precio, descripcion, stock, grupo_id) VALUES (?, ?, ?, ?, ?)',
+        [nombre, precio, descripcion, stock, grupo_id], (err) => {
+            if (err) {
+                console.error('Error al insertar categoría:', err);
+                return res.status(500).send('Error al insertar la categoría.');
+            }
             res.redirect('/categorias');
         });
 };
@@ -708,13 +691,20 @@ exports.eliminarCategoria = (req, res) => {
 //NOTAS
 exports.crearNota = (req, res) => {
     const { titulo, contenido } = req.body;
-    db.query('INSERT INTO notas (titulo, contenido) VALUES (?, ?)', [titulo, contenido], (err) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+    db.query('INSERT INTO notas (titulo, contenido, grupo_id) VALUES (?, ?, ?)', [titulo, contenido, grupo_id], (err) => {
         if (err) throw err;
         res.redirect('/notas');
     });
 };
+
 exports.leerNotas = (req, res) => {
-    db.query('SELECT * FROM notas', (err, results) => {
+    db.query('SELECT notas.*, grupos.nombre_empresa AS grupo_nombre FROM notas LEFT JOIN grupos ON notas.grupo_id = grupos.id', (err, results) => {
         if (err) throw err;
         res.render('notas', { notas: results });
     });
@@ -750,14 +740,21 @@ exports.eliminarNota = (req, res) => {
 //RECORDATORIOS
 exports.crearRecordatorio = (req, res) => {
     const { titulo, contenido, fecha_inicio, fecha_fin } = req.body;
-    db.query('INSERT INTO recordatorios (titulo, contenido, fecha_inicio, fecha_fin) VALUES (?, ?, ?, ?)', 
-        [titulo, contenido, fecha_inicio, fecha_fin], (err) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+    db.query('INSERT INTO recordatorios (titulo, contenido, fecha_inicio, fecha_fin, grupo_id) VALUES (?, ?, ?, ?, ?)', 
+        [titulo, contenido, fecha_inicio, fecha_fin, grupo_id], (err) => {
             if (err) throw err;
             res.redirect('/recordatorios');
         });
 };
+
 exports.leerRecordatorios = (req, res) => {
-    db.query('SELECT * FROM recordatorios', (err, results) => {
+    db.query('SELECT recordatorios.*, grupos.nombre_empresa AS grupo_nombre FROM recordatorios LEFT JOIN grupos ON recordatorios.grupo_id = grupos.id', (err, results) => {
         if (err) throw err;
 
         const recordatorios = results.map(recordatorio => {

@@ -14,6 +14,7 @@
                 <th>Precio</th>
                 <th>Descripción</th>
                 <th>Stock</th>
+                <th>Grupo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -32,6 +33,7 @@
                     <td>
                         <%= categoria.stock %>
                     </td>
+                    <td><%= categoria.grupo_nombre ? categoria.grupo_nombre : 'Sin grupo' %></td>
                     <td>
                         <a href="/categorias/editar/<%= categoria.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
                         <a href="/categorias/eliminar/<%= categoria.id %>"
