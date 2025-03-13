@@ -1,6 +1,6 @@
-<form action="/create-group" method="POST">
+<form action="/create-group" method="POST" id="grupoForm">
     <label>Nombre de Empresa:</label>
-    <input type="text" name="nombre_empresa" required>
+    <input type="text" name="nombre_empresa" id="nombre_empresa" required>
 
     <label>Rubro:</label>
     <input type="text" name="rubro">
@@ -13,3 +13,16 @@
 
     <button type="submit">Crear Grupo</button>
 </form>
+
+<script>
+    document.getElementById("grupoForm").addEventListener("submit", function(event) {
+
+        const nombreEmpresa = document.getElementById("nombre_empresa").value; // Captura el valor de nombre_empresa
+
+        // Guarda el nombre de la empresa en localStorage
+        localStorage.setItem("nombre_empresa", nombreEmpresa);
+
+        // Aquí puedes enviar el formulario de manera tradicional si lo necesitas
+        // this.submit(); // Descomenta si quieres enviar el formulario después de guardar en localStorage
+    });
+</script>
