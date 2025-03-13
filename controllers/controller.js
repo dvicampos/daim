@@ -1,44 +1,50 @@
 const db = require('../models/db');
 const bcrypt = require('bcrypt');
 
-// Página principal
 exports.index = (req, res) => {
-    if (!req.session.encargadoId) {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
         return res.redirect('/login');
     }
 
-    db.query('SELECT * FROM recordatorios', (err, recordatorios) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al obtener los recordatorios');
-        }
+    const grupo_id = req.session.encargado.grupo_id; 
 
-        db.query(
-            `SELECT encargados.nombre, encargados.apellido, grupos.nombre_empresa 
-            FROM encargados 
-            LEFT JOIN grupos ON encargados.grupo_id = grupos.id 
-            WHERE encargados.id = ?`,
-            [req.session.encargadoId],
-            (err, results) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('Error al obtener los datos del usuario');
-                }
-
-                if (results.length === 0) {
-                    return res.redirect('/login');
-                }
-
-                const usuario = results[0]; 
-
-                res.render('index', { 
-                    recordatorios, 
-                    usuario
-                });
+    db.query(
+        `SELECT * FROM recordatorios WHERE grupo_id = ?`, 
+        [grupo_id], 
+        (err, recordatorios) => {
+            if (err) {
+                console.error('Error al obtener los recordatorios:', err);
+                return res.status(500).send('Error al obtener los recordatorios.');
             }
-        );
-    });
+
+            db.query(
+                `SELECT encargados.nombre, encargados.apellido, grupos.nombre_empresa 
+                FROM encargados 
+                LEFT JOIN grupos ON encargados.grupo_id = grupos.id 
+                WHERE encargados.id = ?`,
+                [req.session.encargadoId],
+                (err, results) => {
+                    if (err) {
+                        console.error('Error al obtener los datos del usuario:', err);
+                        return res.status(500).send('Error al obtener los datos del usuario.');
+                    }
+
+                    if (results.length === 0) {
+                        return res.redirect('/login');
+                    }
+
+                    const usuario = results[0];
+
+                    res.render('index', { 
+                        recordatorios, 
+                        usuario 
+                    });
+                }
+            );
+        }
+    );
 };
+
 
 
 // Registro de abogados
@@ -100,6 +106,49 @@ exports.createGroupPost = (req, res) => {
     );
 };
 
+exports.editGroup = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        return res.redirect('/login');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+
+    db.query('SELECT * FROM grupos WHERE id = ?', [grupo_id], (err, results) => {
+        if (err) {
+            console.error('Error al obtener el grupo:', err);
+            return res.status(500).send('Error al obtener el grupo.');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('Grupo no encontrado.');
+        }
+
+        res.render('editGroup', { grupo: results[0] });
+    });
+};
+
+exports.updateGroup = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        return res.redirect('/login');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+    const { nombre_empresa, rubro, descripcion, ubicacion } = req.body;
+
+    db.query(
+        'UPDATE grupos SET nombre_empresa = ?, rubro = ?, descripcion = ?, ubicacion = ? WHERE id = ?',
+        [nombre_empresa, rubro, descripcion, ubicacion, grupo_id],
+        (err) => {
+            if (err) {
+                console.error('Error al actualizar el grupo:', err);
+                return res.status(500).send('Error al actualizar el grupo.');
+            }
+            res.redirect('/dashboard');
+        }
+    );
+};
+
+
 exports.registerPost = async (req, res) => {
     const { nombre, apellido, email, telefono, especialidad, password, grupo_id } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -137,21 +186,28 @@ exports.logout = (req, res) => {
 
 // CLIENTES 
 exports.clientes = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+
     const sql = `
         SELECT clientes.*, grupos.nombre_empresa AS grupo_nombre
         FROM clientes
         LEFT JOIN grupos ON clientes.grupo_id = grupos.id
+        WHERE clientes.grupo_id = ?
     `;
 
-    db.query(sql, (err, results) => {
+    db.query(sql, [grupo_id], (err, results) => {
         if (err) {
-            console.error(err);
+            console.error('Error al obtener clientes:', err);
             return res.status(500).send('Error al obtener clientes');
         }
         res.render('clientes', { clientes: results });
     });
 };
-
 
 exports.crearCliente = (req, res) => {
     res.render('crearCliente');
@@ -223,12 +279,29 @@ exports.eliminarCliente = (req, res) => {
 
 // encargados
 exports.encargados = (req, res) => {
-    const query = 'SELECT encargados.*, grupos.nombre_empresa AS grupo_nombre FROM encargados LEFT JOIN grupos ON encargados.grupo_id = grupos.id';
-    db.query(query, (err, results) => {
-        if (err) throw err;
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.status(403).send('Acceso denegado');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+
+    const query = `
+        SELECT encargados.*, grupos.nombre_empresa AS grupo_nombre 
+        FROM encargados 
+        LEFT JOIN grupos ON encargados.grupo_id = grupos.id
+        WHERE encargados.grupo_id = ?
+    `;
+
+    db.query(query, [grupo_id], (err, results) => {
+        if (err) {
+            console.error('Error al obtener encargados:', err);
+            return res.status(500).send('Error al obtener encargados');
+        }
         res.render('encargados', { encargados: results });
     });
 };
+
 
 exports.crearEncargado = (req, res) => {
     res.render('crearEncargado');
@@ -236,9 +309,15 @@ exports.crearEncargado = (req, res) => {
 
 exports.crearEncargadoPost = async (req, res) => {
     const { nombre, apellido, email, telefono, especialidad, password } = req.body;
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.redirect('/crearCliente');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
     const hashedPassword = await bcrypt.hash(password, 10);
-    db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password) VALUES (?, ?, ?, ?, ?, ?)',
-        [nombre, apellido, email, telefono, especialidad, hashedPassword], (err) => {
+    db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [nombre, apellido, email, telefono, especialidad, hashedPassword, grupo_id], (err) => {
             if (err) throw err;
             res.redirect('/encargados');
         });
@@ -286,6 +365,13 @@ exports.eliminarEncargado = (req, res) => {
 
 // CASOS 
 exports.casos = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.status(403).send('Acceso denegado');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id; 
+
     const query = `
         SELECT 
             casos.id AS caso_id, 
@@ -310,11 +396,13 @@ exports.casos = (req, res) => {
             caso_categorias ON casos.id = caso_categorias.caso_id 
         JOIN 
             categorias ON caso_categorias.categoria_id = categorias.id
+        WHERE 
+            casos.grupo_id = ?
         GROUP BY 
             casos.id, clientes.nombre, encargados.nombre, grupos.nombre_empresa, casos.descripcion, casos.estado, casos.precio, casos.fecha_entrega, casos.fecha_devolucion
     `;
 
-    db.query(query, (err, results) => {
+    db.query(query, [grupo_id], (err, results) => {
         if (err) {
             console.error('Error al obtener los casos:', err);
             return res.status(500).send('Error al obtener los casos.');
@@ -322,6 +410,7 @@ exports.casos = (req, res) => {
         res.render('casos', { casos: results });
     });
 };
+
 
 exports.casoIndividual = (req, res) => {
     const casoId = req.params.id; 
@@ -600,13 +689,21 @@ exports.generarPDF = (req, res) => {
 
 // CATEGORIAS 
 exports.categorias = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.status(403).send('Acceso denegado');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id; 
+
     const query = `
         SELECT categorias.*, grupos.nombre_empresa AS grupo_nombre 
         FROM categorias 
         LEFT JOIN grupos ON categorias.grupo_id = grupos.id
+        WHERE categorias.grupo_id = ?
     `;
 
-    db.query(query, (err, results) => {
+    db.query(query, [grupo_id], (err, results) => {
         if (err) {
             console.error('Error al obtener las categorías:', err);
             return res.status(500).send('Error al obtener las categorías.');
@@ -615,6 +712,7 @@ exports.categorias = (req, res) => {
         res.render('categorias', { categorias: results });
     });
 };
+
 
 
 exports.crearCategoria = (req, res) => {
@@ -704,11 +802,30 @@ exports.crearNota = (req, res) => {
 };
 
 exports.leerNotas = (req, res) => {
-    db.query('SELECT notas.*, grupos.nombre_empresa AS grupo_nombre FROM notas LEFT JOIN grupos ON notas.grupo_id = grupos.id', (err, results) => {
-        if (err) throw err;
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.status(403).send('Acceso denegado');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id; 
+
+    const query = `
+        SELECT notas.*, grupos.nombre_empresa AS grupo_nombre 
+        FROM notas 
+        LEFT JOIN grupos ON notas.grupo_id = grupos.id
+        WHERE notas.grupo_id = ?
+    `;
+
+    db.query(query, [grupo_id], (err, results) => {
+        if (err) {
+            console.error('Error al obtener las notas:', err);
+            return res.status(500).send('Error al obtener las notas.');
+        }
+
         res.render('notas', { notas: results });
     });
 };
+
 // Obtener la nota para editar
 exports.obtenerNotaParaEditar = (req, res) => {
     const { id } = req.params;
@@ -754,20 +871,36 @@ exports.crearRecordatorio = (req, res) => {
 };
 
 exports.leerRecordatorios = (req, res) => {
-    db.query('SELECT recordatorios.*, grupos.nombre_empresa AS grupo_nombre FROM recordatorios LEFT JOIN grupos ON recordatorios.grupo_id = grupos.id', (err, results) => {
-        if (err) throw err;
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        console.error('Error: No se encontró grupo_id en la sesión');
+        return res.status(403).send('Acceso denegado');
+    }
 
-        const recordatorios = results.map(recordatorio => {
-            return {
-                ...recordatorio,
-                fecha_inicio: recordatorio.fecha_inicio.toISOString().split('T')[0], // Formato YYYY-MM-DD
-                fecha_fin: recordatorio.fecha_fin.toISOString().split('T')[0]
-            };
-        });
+    const grupo_id = req.session.encargado.grupo_id;
+
+    const query = `
+        SELECT recordatorios.*, grupos.nombre_empresa AS grupo_nombre 
+        FROM recordatorios 
+        LEFT JOIN grupos ON recordatorios.grupo_id = grupos.id
+        WHERE recordatorios.grupo_id = ?
+    `;
+
+    db.query(query, [grupo_id], (err, results) => {
+        if (err) {
+            console.error('Error al obtener los recordatorios:', err);
+            return res.status(500).send('Error al obtener los recordatorios.');
+        }
+
+        const recordatorios = results.map(recordatorio => ({
+            ...recordatorio,
+            fecha_inicio: recordatorio.fecha_inicio.toISOString().split('T')[0],
+            fecha_fin: recordatorio.fecha_fin.toISOString().split('T')[0]
+        }));
 
         res.render('recordatorios', { recordatorios });
     });
 };
+
 
 exports.editarRecordatorio = (req, res) => {
     const { id } = req.params;
