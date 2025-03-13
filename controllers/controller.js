@@ -705,14 +705,23 @@ exports.crearCaso = (req, res) => {
 
     const grupo_id = req.session.encargado.grupo_id;
 
-    db.query('SELECT * FROM clientes', (err, clientes) => {
-        if (err) throw err;
+    db.query('SELECT * FROM clientes WHERE grupo_id = ?', [grupo_id], (err, clientes) => {
+        if (err) {
+            console.error('Error al obtener clientes:', err);
+            return res.status(500).send('Error al obtener clientes.');
+        }
 
-        db.query('SELECT * FROM encargados', (err, encargados) => {
-            if (err) throw err;
+        db.query('SELECT * FROM encargados WHERE grupo_id = ?', [grupo_id], (err, encargados) => {
+            if (err) {
+                console.error('Error al obtener encargados:', err);
+                return res.status(500).send('Error al obtener encargados.');
+            }
 
-            db.query('SELECT * FROM categorias', (err, categorias) => {
-                if (err) throw err;
+            db.query('SELECT * FROM categorias WHERE grupo_id = ?', [grupo_id], (err, categorias) => {
+                if (err) {
+                    console.error('Error al obtener categorías:', err);
+                    return res.status(500).send('Error al obtener categorías.');
+                }
 
                 db.query('SELECT * FROM grupos WHERE id = ?', [grupo_id], (err, grupoResults) => {
                     if (err) {

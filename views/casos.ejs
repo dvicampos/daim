@@ -14,7 +14,6 @@ renta</a>
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Cliente</th>
                 <th>Vendedor</th>
                 <th>Categorías</th>
@@ -30,12 +29,11 @@ renta</a>
         <tbody>
             <% casos.forEach(caso => { %>
                 <tr>
-                    <td><%= caso.caso_id %></td>
                     <td><%= caso.cliente_nombre %></td>
                     <td><%= caso.abogado_nombre %></td>
                     <td><%= caso.categorias_nombres %></td>
                     <td><%= caso.descripcion %></td>
-		    <td><%= caso.precio %></td>
+		            <td><%= caso.precio %></td>
                     <td><%= new Date(caso.fecha_entrega).toLocaleString() %></td> 
                     <td><%= new Date(caso.fecha_devolucion).toLocaleString() %> </td>
                     <td>
