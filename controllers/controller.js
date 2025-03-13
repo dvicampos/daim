@@ -34,16 +34,19 @@ exports.index = (req, res) => {
                     }
 
                     const usuario = results[0];
+                    const grupo = usuario.nombre_empresa;
 
                     res.render('index', { 
                         recordatorios, 
-                        usuario 
+                        usuario,
+                        grupo
                     });
                 }
             );
         }
     );
 };
+
 
 
 
@@ -143,7 +146,7 @@ exports.updateGroup = (req, res) => {
                 console.error('Error al actualizar el grupo:', err);
                 return res.status(500).send('Error al actualizar el grupo.');
             }
-            res.redirect('/dashboard');
+            res.redirect('/');
         }
     );
 };
