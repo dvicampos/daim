@@ -3,7 +3,6 @@
     <form action="/edit-group" method="POST" enctype="multipart/form-data" class="bg-light p-5 rounded shadow">
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <!-- Foto de Perfil -->
                 <label for="foto_perfil" class="form-label">Foto de Perfil</label>
                 <div class="position-relative">
                     <img src="/<%= grupo.foto_perfil %>" alt="Sin foto de Perfil" id="fotoPreview" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
@@ -14,34 +13,31 @@
             </div>
         </div>
 
-        <!-- Nombre de la Empresa -->
         <div class="mb-3">
             <label for="nombre_empresa" class="form-label">Nombre de la Empresa:</label>
             <input type="text" class="form-control" id="nombre_empresa" name="nombre_empresa" value="<%= grupo.nombre_empresa %>" required>
         </div>
     
-        <!-- Rubro -->
         <div class="mb-3">
             <label for="rubro" class="form-label">Rubro:</label>
             <input type="text" class="form-control" id="rubro" name="rubro" value="<%= grupo.rubro %>" required>
         </div>
     
-        <!-- Descripción -->
         <div class="mb-3">
             <label for="descripcion" class="form-label">Descripción:</label>
             <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required><%= grupo.descripcion %></textarea>
         </div>
     
-        <!-- Ubicación -->
         <div class="mb-3">
             <label for="ubicacion" class="form-label">Ubicación:</label>
             <input type="text" class="form-control" id="ubicacion" name="ubicacion" value="<%= grupo.ubicacion %>" required>
         </div>
     
         <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary btn-lg">Actualizar Grupo</button>
+            <button type="submit" class="btn btn-primary">Actualizar Grupo</button>
+            <a class="btn btn-danger" href="/">Regresar</a> 
         </div>
-    </form>    
+    </form>   
 </div>
 
 <script>

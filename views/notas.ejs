@@ -29,8 +29,12 @@
                             <h6 class="card-subtitle mb-2 text-muted"><%= nota.titulo %></h6>
                             <p class="card-text"><strong>Descripcion: </strong><%= nota.contenido %></p>
                             <p class="card-text"><%= nota.grupo_nombre ? nota.grupo_nombre : 'Sin grupo' %></p>
-                            <a href="/editar-nota/<%= nota.id %>" class="btn btn-warning m-1">Editar</a>
-                            <a href="/eliminar-nota/<%= nota.id %>" class="btn btn-danger m-1">Eliminar</a>
+                            <% if (rol === 'admin' || rol === 'editor') { %>
+                                <a href="/editar-nota/<%= nota.id %>" class="btn btn-warning m-1">Editar</a>
+                                <a href="/eliminar-nota/<%= nota.id %>" class="btn btn-danger m-1">Eliminar</a>
+                            <% } else { %>
+                                    <p>Sin permisos</p>
+                            <% } %>
                         </div>
                     </div>
                 </div>

@@ -60,8 +60,12 @@
                             <input type="checkbox" disabled <%= recordatorio.completado ? 'checked' : '' %> />
                         </td>
                         <td>
-                            <a href="/editar-recordatorio/<%= recordatorio.id %>" class="btn btn-warning m-2">Editar</a>
-                            <a href="/eliminar-recordatorio/<%= recordatorio.id %>" class="btn btn-danger m-2">Eliminar</a>
+                            <% if (rol === 'admin' || rol === 'editor') { %>
+                                <a href="/editar-recordatorio/<%= recordatorio.id %>" class="btn btn-warning m-2">Editar</a>
+                                <a href="/eliminar-recordatorio/<%= recordatorio.id %>" class="btn btn-danger m-2">Eliminar</a>
+                            <% } else { %>
+                                    <p>Sin permisos</p>
+                            <% } %>
                         </td>
                     </tr>
                     <% }) %>

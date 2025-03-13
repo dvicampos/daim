@@ -7,6 +7,7 @@ exports.index = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id; 
+    const rol = req.session.encargado.especialidad;
 
     db.query(
         `SELECT * FROM recordatorios WHERE grupo_id = ?`, 
@@ -39,7 +40,8 @@ exports.index = (req, res) => {
                     res.render('index', { 
                         recordatorios, 
                         usuario,
-                        grupo
+                        grupo,
+                        rol : rol
                     });
                 }
             );
@@ -78,6 +80,7 @@ exports.loginPost = (req, res) => {
                 id: encargado.id,
                 nombre: encargado.nombre,
                 apellido: encargado.apellido,
+                especialidad: encargado.especialidad,
                 grupo_id: encargado.grupo_id,
             };
             res.redirect('/');
@@ -129,6 +132,7 @@ exports.editGroup = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id;
+    const rol = req.session.encargado.especialidad;
 
     db.query('SELECT * FROM grupos WHERE id = ?', [grupo_id], (err, results) => {
         if (err) {
@@ -140,7 +144,7 @@ exports.editGroup = (req, res) => {
             return res.status(404).send('Grupo no encontrado.');
         }
 
-        res.render('editGroup', { grupo: results[0] });
+        res.render('editGroup', { grupo: results[0], rol: rol });
     });
 };
 
@@ -237,6 +241,7 @@ exports.clientes = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id;
+    const rol = req.session.encargado.especialidad;
 
     db.query(
         'SELECT * FROM grupos WHERE id = ?',
@@ -267,7 +272,7 @@ exports.clientes = (req, res) => {
                     return res.status(500).send('Error al obtener clientes');
                 }
 
-                res.render('clientes', { clientes: clienteResults, grupo: grupo });
+                res.render('clientes', { clientes: clienteResults, grupo: grupo, rol: rol });
             });
         }
     );
@@ -393,6 +398,7 @@ exports.encargados = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id;
+    const rol = req.session.encargado.especialidad;
 
     const query = `
         SELECT encargados.*, grupos.nombre_empresa AS grupo_nombre 
@@ -419,7 +425,7 @@ exports.encargados = (req, res) => {
 
             const grupo = grupoResults[0]; 
 
-            res.render('encargados', { encargados: results, grupo });
+            res.render('encargados', { encargados: results, grupo, rol: rol });
         });
     });
 };
@@ -527,6 +533,7 @@ exports.casos = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id;
+    const rol = req.session.encargado.especialidad;
 
     const query = `
         SELECT 
@@ -576,7 +583,7 @@ exports.casos = (req, res) => {
 
             const grupo = grupoResults[0]; 
 
-            res.render('casos', { casos: results, grupo });
+            res.render('casos', { casos: results, grupo, rol: rol });
         });
     });
 };
@@ -922,6 +929,7 @@ exports.categorias = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id; 
+    const rol = req.session.encargado.especialidad;
 
     const queryCategorias = `
         SELECT categorias.*, grupos.nombre_empresa AS grupo_nombre 
@@ -949,7 +957,7 @@ exports.categorias = (req, res) => {
 
             const grupo = grupoResults[0]; 
 
-            res.render('categorias', { categorias, grupo });
+            res.render('categorias', { categorias, grupo, rol: rol });
         });
     });
 };
@@ -1101,6 +1109,7 @@ exports.leerNotas = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id; 
+    const rol = req.session.encargado.especialidad;
 
     const query = `
         SELECT notas.*, grupos.nombre_empresa AS grupo_nombre 
@@ -1126,7 +1135,7 @@ exports.leerNotas = (req, res) => {
 
             const grupo = grupoResults[0]; 
 
-            res.render('notas', { notas: results, grupo });
+            res.render('notas', { notas: results, grupo, rol:rol });
         });
     });
 };
@@ -1194,6 +1203,7 @@ exports.leerRecordatorios = (req, res) => {
     }
 
     const grupo_id = req.session.encargado.grupo_id;
+    const rol = req.session.encargado.especialidad;
 
     const queryRecordatorios = `
         SELECT recordatorios.*, grupos.nombre_empresa AS grupo_nombre 
@@ -1226,7 +1236,7 @@ exports.leerRecordatorios = (req, res) => {
                 fecha_fin: recordatorio.fecha_fin ? recordatorio.fecha_fin.toISOString().split('T')[0] : null
             }));
 
-            res.render('recordatorios', { recordatorios, grupo });
+            res.render('recordatorios', { recordatorios, grupo, rol:rol });
         });
     });
 };

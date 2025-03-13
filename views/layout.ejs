@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Alquiladora DAIM</title>
+    <title>davanitechnology</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/jquery-3.5.1.slim.min.js">
@@ -22,6 +22,11 @@
             </ul>
             <div class="float-right d-sm-inline">
                 <b>Hora:</b> <span id="version-hora"></span>
+            </div>
+            <div class="float-right">
+                <a href="/logout">
+                    <i class="fa-solid fa-power-off" style="color: #ff3b3b;"></i>
+                </a>
             </div>
         </nav>
 
@@ -48,12 +53,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/encargados" class="nav-link">
-                                <i class="nav-icon fa fa-users-gear"></i>
-                                <p>Administradores</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="/casos" class="nav-link">
                                 <i class="nav-icon fa fa-table"></i>
                                 <p>Rentas</p>
@@ -76,19 +75,7 @@
                                 <i class="nav-icon fa-solid fa-business-time"></i>
                                 <p>Recordatorios</p>
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/edit-group" class="nav-link">
-                                <i class="nav-icon fa fa-building"></i>
-                                <p>Editar Grupo</p>
-                            </a>
-                        </li>                        
-                        <li class="nav-item">
-                            <a href="/logout" class="nav-link">
-                                <i class=" text-danger fa fa-sign-out"></i>
-                                <p class="text-danger">Cerrar Sesión</p>
-                            </a>
-                        </li>
+                        </li>                    
                     </ul>
                 </nav>
             </div>

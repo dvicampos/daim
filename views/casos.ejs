@@ -8,8 +8,9 @@
     }
 </style>
 <h1 class="text-center">Rentas <i class="fa fa-shopping-cart"></i></h1>
-<a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar 
-renta</a>
+<% if (rol !== 'usuario') { %>
+    <a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar renta</a>
+<% } %>
 <div class="table-wrapper">
     <table class="table table-bordered">
         <thead>
@@ -47,9 +48,12 @@ renta</a>
                     </td>
                     <td><%= caso.grupo_nombre ? caso.grupo_nombre : 'Sin grupo' %></td>
                     <td>
-                        <a href="/casos/editar/<%= caso.caso_id %>" class="btn btn-warning btn-sm m-2">Editar</a>
-                        <a href="/casos/eliminar/<%= caso.caso_id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
-                        <!-- Botón para descargar el PDF -->
+                        <% if (rol === 'admin' || rol === 'editor') { %>
+                            <a href="/casos/editar/<%= caso.caso_id %>" class="btn btn-warning btn-sm m-2">Editar</a>
+                            <a href="/casos/eliminar/<%= caso.caso_id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
+                        <% } else { %>
+                                <p>Sin permisos</p>
+                        <% } %>
                         <a href="/generar-pdf/<%= caso.caso_id %>" class="btn btn-info btn-sm m-2">
                             Ticket
                         </a>

@@ -5,7 +5,9 @@
     }
 </style>
 <h1 class="text-center">Categorías <i class="fa fa-tag"></i></h1>
-<a href="/categorias/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar categoría</a>
+<% if (rol !== 'usuario') { %>
+    <a href="/categorias/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar categoría</a>
+<% } %>
 <div class="table-wrapper">
     <table class="table table-bordered">
         <thead>
@@ -35,9 +37,12 @@
                     </td>
                     <td><%= categoria.grupo_nombre ? categoria.grupo_nombre : 'Sin grupo' %></td>
                     <td>
-                        <a href="/categorias/editar/<%= categoria.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
-                        <a href="/categorias/eliminar/<%= categoria.id %>"
-                            class="btn btn-danger btn-sm m-2">Eliminar</a>
+                        <% if (rol === 'admin' || rol === 'editor') { %>
+                            <a href="/categorias/editar/<%= categoria.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
+                            <a href="/categorias/eliminar/<%= categoria.id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
+                        <% } else { %>
+                                <p>Sin permisos</p>
+                        <% } %>
                     </td>
                 </tr>
                 <% }); %>
