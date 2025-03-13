@@ -1,7 +1,7 @@
 <section class="content">
     <div class="container-fluid text-center">
         <div class="card-body text-center p-4">
-            <h1 class="font-weight-bold text-primary">
+            <h1 class="font-weight-bold text-info">
                 Bienvenido, <%= usuario.nombre %> <%= usuario.apellido %>
             </h1>
             <p class="lead text-secondary mt-3">
@@ -9,103 +9,110 @@
                 <span class="font-weight-bold text-dark"><%= usuario.nombre_empresa || 'Sin grupo' %></span>
             </p>
         </div>
-        <h3 class="text-center">Accesos rapidos</h3>
+        <h3 class="text-center text-primary font-weight-bold">🚀 Accesos Rápidos</h3>
         <div class="row mt-4 justify-content-center">
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-warning">
+            <div class="col-lg-3 col-md-6 col-12">
+                <div class="small-box bg-warning shadow-lg rounded-lg text-center">
                     <div class="inner">
-                        <h3>Cliente</h3>
-                        <p>Agrega clientes.</p>
+                        <h3 class="font-weight-bold">Clientes</h3>
+                        <p>Agrega y administra clientes.</p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-solid fa-note-sticky"></i>
+                        <i class="fas fa-user-friends fa-3x"></i>
                     </div>
-                    <a href="/clientes" class="small-box-footer">Ir <i
-                            class="fas fa-arrow-circle-right"></i></a>
+                    <a href="/clientes" class="small-box-footer text-dark font-weight-bold">
+                        Ir <i class="fas fa-arrow-circle-right"></i>
+                    </a>
                 </div>
             </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3>Rentas</h3>
-                        <p>Agrega rentas.</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-solid fa-business-time"></i>
-                    </div>
-                    <a href="/casos" class="small-box-footer">Ir <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-4 justify-content-center">
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-info">
-                    <div class="inner">
-                        <h3>Notas</h3>
-                        <p>Agrega notas que deseas guardar.</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-solid fa-note-sticky"></i>
-                    </div>
-                    <a href="/notas" class="small-box-footer">Ir <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3>Avisos</h3>
-                        <p>Agrega recordatorios importantes.</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-solid fa-business-time"></i>
-                    </div>
-                    <a href="/recordatorios" class="small-box-footer">Ir <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<h3 class="text-center">RECORDATORIOS</h3>
-<div class="container">
-    <div class="row mt-4">
-        <% recordatorios.forEach(recordatorio => { %>
-            <% if (!recordatorio.completado) { %>
-                <% 
-                // Calcular la diferencia de días
-                const fechaFin = new Date(recordatorio.fecha_fin);
-                const hoy = new Date();
-                const diferencia = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24)); 
 
-                // Determinar la clase según la diferencia de días
-                let cardClass;
-                if (diferencia < 1) {
-                    cardClass = 'bg-secondary'; // Rojo
-                } else if (diferencia === 1) {
-                    cardClass = 'bg-danger'; // Amarillo
-                } else if (diferencia === 2) {
-                    cardClass = 'bg-warning'; // Amarillo
-                }else {
-                    cardClass = 'bg-success'; // Verde o cualquier otro color para más de 2 días
-                }
-                %>
-                <div class="col-md-6 mb-4">
-                    <div class="card text-center <%= cardClass %>">
-                        <div class="card-header">
-                            <%= recordatorio.titulo %>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text"><%= recordatorio.contenido %></p>
-                            <a href="/editar-recordatorio/<%= recordatorio.id %>" class="btn btn-primary">Editar como completada</a>
-                        </div>
-                        <div class="card-footer text-white">
-                            <%= diferencia >= 0 ? diferencia + " días restantes" : "¡Fecha cumplida!" %>
-                        </div>
+            <div class="col-lg-3 col-md-6 col-12">
+                <div class="small-box bg-danger shadow-lg rounded-lg text-center">
+                    <div class="inner">
+                        <h3 class="font-weight-bold">Rentas</h3>
+                        <p>Gestiona tus rentas fácilmente.</p>
                     </div>
+                    <div class="icon">
+                        <i class="fas fa-home fa-3x"></i>
+                    </div>
+                    <a href="/casos" class="small-box-footer text-light font-weight-bold">
+                        Ir <i class="fas fa-arrow-circle-right"></i>
+                    </a>
                 </div>
-            <% } %>
-        <% }) %>
-    </div>
-</div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 col-12">
+                <div class="small-box bg-info shadow-lg rounded-lg text-center">
+                    <div class="inner">
+                        <h3 class="font-weight-bold">Notas</h3>
+                        <p>Guarda información importante.</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-sticky-note fa-3x"></i>
+                    </div>
+                    <a href="/notas" class="small-box-footer text-light font-weight-bold">
+                        Ir <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 col-12">
+                <div class="small-box bg-success shadow-lg rounded-lg text-center">
+                    <div class="inner">
+                        <h3 class="font-weight-bold">Avisos</h3>
+                        <p>Configura recordatorios importantes.</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-bell fa-3x"></i>
+                    </div>
+                    <a href="/recordatorios" class="small-box-footer text-light font-weight-bold">
+                        Ir <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <h3 class="text-center fw-bold text-uppercase text-primary">📌 Recordatorios</h3>
+
+        <div class="container">
+            <div class="row mt-4">
+                <% recordatorios.forEach(recordatorio => { %>
+                    <% if (!recordatorio.completado) { %>
+                        <% 
+                        const fechaFin = new Date(recordatorio.fecha_fin);
+                        const hoy = new Date();
+                        const diferencia = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24)); 
+
+                        let cardClass, textColor;
+                        if (diferencia < 1) {
+                            cardClass = 'bg-secondary';
+                            textColor = 'text-white';
+                        } else if (diferencia === 1) {
+                            cardClass = 'bg-danger';
+                            textColor = 'text-white';
+                        } else if (diferencia === 2) {
+                            cardClass = 'bg-warning';
+                            textColor = 'text-dark';
+                        } else {
+                            cardClass = 'bg-success';
+                            textColor = 'text-white';
+                        }
+                        %>
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card shadow-lg border-0 <%= cardClass %> <%= textColor %>">
+                                <div class="card-header fw-bold fs-5">
+                                    <%= recordatorio.titulo %>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text fs-6"><%= recordatorio.contenido %></p>
+                                    <a href="/editar-recordatorio/<%= recordatorio.id %>" class="btn btn-light fw-bold">✔ Marcar como completada</a>
+                                </div>
+                                <div class="card-footer fw-bold">
+                                    <%= diferencia >= 0 ? `⏳ ${diferencia} días restantes` : "🚨 ¡Fecha cumplida!" %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                <% }) %>
+            </div>
+        </div>
+</section>

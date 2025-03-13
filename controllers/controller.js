@@ -295,7 +295,7 @@ exports.crearCliente = (req, res) => {
 
         const grupo = results[0]; 
 
-        res.render('crearCliente', { grupo });
+        res.render('crearCliente', { grupo: grupo });
     });
 };
 
@@ -350,7 +350,7 @@ exports.editarCliente = (req, res) => {
 
             const grupo = grupoResults[0];
 
-            res.render('editarCliente', { cliente, grupo });
+            res.render('editarCliente', { cliente, grupo: grupo });
         });
     });
 };
@@ -1199,13 +1199,7 @@ exports.leerRecordatorios = (req, res) => {
             return res.status(500).send('Error al obtener los recordatorios.');
         }
 
-        if (recordatorioResults.length === 0) {
-            return res.status(404).send('No se encontraron recordatorios.');
-        }
-
-        const grupo_id_recordatorio = recordatorioResults[0].grupo_id;
-
-        db.query('SELECT * FROM grupos WHERE id = ?', [grupo_id_recordatorio], (err, grupoResults) => {
+        db.query('SELECT * FROM grupos WHERE id = ?', [grupo_id], (err, grupoResults) => {
             if (err) {
                 console.error('Error al obtener el grupo:', err);
                 return res.status(500).send('Error al obtener el grupo.');
