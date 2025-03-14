@@ -95,10 +95,10 @@ exports.createGroup = (req, res) => {
 };
 
 exports.createGroupPost = (req, res) => {
-    const { nombre_empresa, rubro, descripcion, ubicacion } = req.body;
+    const { nombre_empresa, rubro, descripcion, ubicacion, horario, telefono, email, facebook, tiktok } = req.body;
 
-    db.query('INSERT INTO grupos (nombre_empresa, rubro, descripcion, ubicacion) VALUES (?, ?, ?, ?)',
-        [nombre_empresa, rubro, descripcion, ubicacion],
+    db.query('INSERT INTO grupos (nombre_empresa, rubro, descripcion, ubicacion, horario, telefono, email, facebook, tiktok) VALUES (?, ?, ?, ?, ?, ?, ? ,?, ?)',
+        [nombre_empresa, rubro, descripcion, ubicacion, horario, telefono, email, facebook, tiktok],
         (err, results) => {
             if (err) {
                 console.error(err);
@@ -164,19 +164,19 @@ exports.updateGroup = (req, res) => {
         }
 
         // Ahora procesamos los datos del formulario
-        const { nombre_empresa, rubro, descripcion, ubicacion } = req.body;
+        const { nombre_empresa, rubro, descripcion, ubicacion, horario, telefono, email, facebook, tiktok, terminos } = req.body;
 
         console.log('Form Data:', req.body);  // Verifica que los datos del formulario estén aquí
         console.log('Uploaded File:', req.file);  // Verifica que el archivo se haya subido correctamente
 
         const foto_perfil = req.file ? 'uploads/' + req.file.filename : null;
 
-        if (!nombre_empresa || !rubro || !descripcion || !ubicacion) {
+        if (!nombre_empresa || !rubro || !descripcion || !ubicacion || !horario || !telefono || !email || !facebook || !tiktok || !terminos) {
             return res.status(400).send('Todos los campos son obligatorios.');
         }
 
-        let query = 'UPDATE grupos SET nombre_empresa = ?, rubro = ?, descripcion = ?, ubicacion = ?';
-        let queryParams = [nombre_empresa, rubro, descripcion, ubicacion];
+        let query = 'UPDATE grupos SET nombre_empresa = ?, rubro = ?, descripcion = ?, ubicacion = ?, horario= ?, telefono= ?, email= ?, facebook= ?, tiktok= ?, terminos= ?';
+        let queryParams = [nombre_empresa, rubro, descripcion, ubicacion, horario, telefono, email, facebook, tiktok, terminos];
 
         if (foto_perfil) {
             query += ', foto_perfil = ?';
@@ -197,6 +197,29 @@ exports.updateGroup = (req, res) => {
     });
 };
 
+exports.showGroup = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        return res.redirect('/login');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+
+    const query = 'SELECT * FROM grupos WHERE id = ?';
+    db.query(query, [grupo_id], (err, results) => {
+        if (err) {
+            console.error('Error al obtener el grupo:', err);
+            return res.status(500).send('Error al obtener la información del grupo.');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('Grupo no encontrado.');
+        }
+
+        const grupo = results[0];
+
+        res.render('grupo', { layout: false, grupo });
+    });
+};
 
 exports.registerPost = async (req, res) => {
     const { nombre, apellido, email, telefono, especialidad, password, grupo_id } = req.body;
