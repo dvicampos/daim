@@ -880,67 +880,173 @@ exports.eliminarCaso = (req, res) => {
 const pdf = require('html-pdf');
 const QRCode = require('qrcode');
 
+// exports.generarPDF = (req, res) => {
+//     const { id } = req.params;
+
+//     db.query(`SELECT 
+//                 casos.id, 
+//                 clientes.nombre AS cliente_nombre,
+//                 clientes.apellido AS cliente_apellido, 
+//                 clientes.telefono AS cliente_telefono,
+//                 encargados.nombre AS encargado_nombre, 
+//                 encargados.apellido AS encargado_apellido,
+//                 GROUP_CONCAT(categorias.nombre SEPARATOR ', ') AS categorias_nombres, 
+//                 GROUP_CONCAT(caso_categorias.cantidad SEPARATOR ', ') AS categorias_cantidades,
+//                 GROUP_CONCAT(categorias.precio SEPARATOR ', ') AS categorias_precios, 
+//                 casos.descripcion, 
+//                 casos.estado, 
+//                 casos.precio,
+//                 casos.fecha_creacion,
+//                 casos.fecha_entrega, 
+//                 casos.fecha_devolucion
+//               FROM casos 
+//               JOIN clientes ON casos.cliente_id = clientes.id 
+//               JOIN encargados ON casos.abogado_id = encargados.id 
+//               JOIN caso_categorias ON casos.id = caso_categorias.caso_id 
+//               JOIN categorias ON caso_categorias.categoria_id = categorias.id 
+//               WHERE casos.id = ? 
+//               GROUP BY casos.id, clientes.nombre, clientes.apellido, clientes.telefono, encargados.nombre, encargados.apellido, casos.descripcion, casos.estado, casos.precio, casos.fecha_creacion, casos.fecha_entrega, casos.fecha_devolucion`, 
+//               [id], (err, results) => {
+//         if (err) throw err;
+
+//         const caso = results[0];
+
+//         const casoUrl = `https://mexwebtechnological.com/casos/ver/${caso.id}`;
+
+//         QRCode.toDataURL(casoUrl, (err, qrCodeUrl) => {
+//             if (err) throw err;
+
+//             res.render('pdfCaso', { caso, qrCodeUrl, layout: false }, (err, html) => {
+//                 if (err) return res.send(err);
+
+//                 const options = {
+//                     format: 'A4',
+//                     orientation: 'portrait',
+//                     border: {
+//                         top: "10mm",
+//                         right: "10mm",
+//                         bottom: "10mm",
+//                         left: "10mm"
+//                     }
+//                 };
+
+//                 pdf.create(html, options).toBuffer((err, buffer) => {
+//                     if (err) return res.send(err);
+//                     res.set({
+//                         'Content-Type': 'application/pdf',
+//                         'Content-Disposition': `attachment; filename=caso_${id}.pdf`,
+//                     });
+//                     res.send(buffer);
+//                 });
+//             });
+//         });
+//     });
+// };
+
 exports.generarPDF = (req, res) => {
     const { id } = req.params;
 
-    db.query(`SELECT 
-                casos.id, 
-                clientes.nombre AS cliente_nombre,
-                clientes.apellido AS cliente_apellido, 
-                clientes.telefono AS cliente_telefono,
-                encargados.nombre AS encargado_nombre, 
-                encargados.apellido AS encargado_apellido,
-                GROUP_CONCAT(categorias.nombre SEPARATOR ', ') AS categorias_nombres, 
-                GROUP_CONCAT(caso_categorias.cantidad SEPARATOR ', ') AS categorias_cantidades,
-                GROUP_CONCAT(categorias.precio SEPARATOR ', ') AS categorias_precios, 
-                casos.descripcion, 
-                casos.estado, 
-                casos.precio,
-                casos.fecha_creacion,
-                casos.fecha_entrega, 
-                casos.fecha_devolucion
-              FROM casos 
-              JOIN clientes ON casos.cliente_id = clientes.id 
-              JOIN encargados ON casos.abogado_id = encargados.id 
-              JOIN caso_categorias ON casos.id = caso_categorias.caso_id 
-              JOIN categorias ON caso_categorias.categoria_id = categorias.id 
-              WHERE casos.id = ? 
-              GROUP BY casos.id, clientes.nombre, clientes.apellido, clientes.telefono, encargados.nombre, encargados.apellido, casos.descripcion, casos.estado, casos.precio, casos.fecha_creacion, casos.fecha_entrega, casos.fecha_devolucion`, 
-              [id], (err, results) => {
-        if (err) throw err;
+    // Primero obtenemos los detalles del caso
+    db.query(`
+        SELECT 
+            casos.id, 
+            clientes.nombre AS cliente_nombre,
+            clientes.apellido AS cliente_apellido, 
+            clientes.telefono AS cliente_telefono,
+            encargados.nombre AS encargado_nombre, 
+            encargados.apellido AS encargado_apellido,
+            GROUP_CONCAT(categorias.nombre SEPARATOR ', ') AS categorias_nombres, 
+            GROUP_CONCAT(caso_categorias.cantidad SEPARATOR ', ') AS categorias_cantidades,
+            GROUP_CONCAT(categorias.precio SEPARATOR ', ') AS categorias_precios, 
+            casos.descripcion, 
+            casos.estado, 
+            casos.precio,
+            casos.fecha_creacion,
+            casos.fecha_entrega, 
+            casos.fecha_devolucion,
+            casos.grupo_id
+        FROM casos 
+        JOIN clientes ON casos.cliente_id = clientes.id 
+        JOIN encargados ON casos.abogado_id = encargados.id 
+        JOIN caso_categorias ON casos.id = caso_categorias.caso_id 
+        JOIN categorias ON caso_categorias.categoria_id = categorias.id 
+        WHERE casos.id = ? 
+        GROUP BY casos.id, clientes.nombre, clientes.apellido, clientes.telefono, encargados.nombre, encargados.apellido, casos.descripcion, casos.estado, casos.precio, casos.fecha_creacion, casos.fecha_entrega, casos.fecha_devolucion`,
+        [id], (err, results) => {
+            if (err) {
+                console.error('Error al obtener el caso:', err);
+                return res.status(500).send('Error al obtener los detalles del caso.');
+            }
 
-        const caso = results[0];
+            const caso = results[0];
+            const casoUrl = `https://mexwebtechnological.com/casos/ver/${caso.id}`;
 
-        const casoUrl = `https://mexwebtechnological.com/casos/ver/${caso.id}`;
-
-        QRCode.toDataURL(casoUrl, (err, qrCodeUrl) => {
-            if (err) throw err;
-
-            res.render('pdfCaso', { caso, qrCodeUrl, layout: false }, (err, html) => {
-                if (err) return res.send(err);
-
-                const options = {
-                    format: 'A4',
-                    orientation: 'portrait',
-                    border: {
-                        top: "10mm",
-                        right: "10mm",
-                        bottom: "10mm",
-                        left: "10mm"
+            // Ahora obtenemos los datos de la empresa (grupo)
+            db.query(`
+                SELECT 
+                    nombre_empresa, 
+                    telefono, 
+                    email, 
+                    foto_perfil, 
+                    ubicacion,
+                    terminos
+                FROM grupos
+                WHERE id = ?`,
+                [caso.grupo_id], (err, resultsGrupo) => {
+                    if (err) {
+                        console.error('Error al obtener los detalles del grupo:', err);
+                        return res.status(500).send('Error al obtener los detalles del grupo.');
                     }
-                };
 
-                pdf.create(html, options).toBuffer((err, buffer) => {
-                    if (err) return res.send(err);
-                    res.set({
-                        'Content-Type': 'application/pdf',
-                        'Content-Disposition': `attachment; filename=caso_${id}.pdf`,
+                    const grupo = resultsGrupo[0];
+
+                    // Generamos el código QR
+                    QRCode.toDataURL(casoUrl, (err, qrCodeUrl) => {
+                        if (err) {
+                            console.error('Error al generar el código QR:', err);
+                            return res.status(500).send('Error al generar el código QR.');
+                        }
+
+                        // Pasamos todos los datos a la vista
+                        res.render('pdfCaso', { 
+                            caso, 
+                            grupo, 
+                            qrCodeUrl, 
+                            layout: false 
+                        }, (err, html) => {
+                            if (err) {
+                                console.error('Error al renderizar la vista:', err);
+                                return res.status(500).send('Error al renderizar la vista.');
+                            }
+
+                            const options = {
+                                format: 'A4',
+                                orientation: 'portrait',
+                                border: {
+                                    top: "10mm",
+                                    right: "10mm",
+                                    bottom: "10mm",
+                                    left: "10mm"
+                                }
+                            };
+
+                            // Creamos el PDF
+                            pdf.create(html, options).toBuffer((err, buffer) => {
+                                if (err) {
+                                    console.error('Error al crear el PDF:', err);
+                                    return res.status(500).send('Error al crear el PDF.');
+                                }
+                                
+                                res.set({
+                                    'Content-Type': 'application/pdf',
+                                    'Content-Disposition': `attachment; filename=caso_${id}.pdf`,
+                                });
+                                res.send(buffer);
+                            });
+                        });
                     });
-                    res.send(buffer);
                 });
-            });
         });
-    });
 };
 
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factura - ALQUILADORA DAIM</title>
+    <title>Factura - ALQUILADORA <%= grupo.nombre_empresa %></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,36 +48,34 @@
 </head>
 <body>
     <div class="container">
-        <h1>Alquiladora DAIM - Ticket de renta</h1>
-        
+        <h1><%= grupo.nombre_empresa %> - Ticket de renta</h1>
+        <% if (grupo.foto_perfil) { %>
+            <img src="/<%= grupo.foto_perfil %>" alt="Foto de <%= grupo.nombre_empresa %>" class="profile-img">
+        <% } %>
         <table class="table-container">
             <tr>
-                <th>Informacion DAIM</th>
+                <th>Informacion <%= grupo.nombre_empresa %></th>
                 <th>Detalles</th>
             </tr>
             <tr>
-                <td>Dirección postal</td>
-                <td>Calle Reforma #15</td>
-            </tr>
-            <tr>
-                <td>Teléfono de DAIM</td>
-                <td>246 170 2872</td>
+                <td>Teléfono</td>
+                <td><%= grupo.telefono %></td>
             </tr>
             <tr>
                 <td>Correo electrónico</td>
-                <td>ixtlapalejic@gmail.com</td>
-            </tr>
-            <tr>
-                <td>Ciudad, estado, código</td>
-                <td>Tlaxcala, Tlax. 90180 San Cosme Atlamaxac</td>
+                <td><%= grupo.email %></td>
             </tr>
             <tr>
                 <td>Encargado</td>
                 <td><%= caso.encargado_nombre %> <%= caso.encargado_apellido %></td>
             </tr>
             <tr>
+                <td>Direccion</td>
+                <td><%= grupo.ubicacion %></td>
+            </tr>
+            <tr>
                 <td>Sitio web</td>
-                <td><a href="https://mexwebtechnological.com/">daim.com</a></td>
+                <td><a href="https://mexwebtechnological.com/<%= grupo.id %>"><%= grupo.nombre_empresa %></a></td>
             </tr>
                 <th>Informacion cliente</th>
                 <th>Detalles</th>
@@ -116,7 +114,7 @@
             </tr>
         </table>
 
-        <h2>Detalles del alquiler</h2>
+        <h2>Detalles de servicio</h2>
         <table class="table-container">
             <thead>
                 <tr>
@@ -145,31 +143,9 @@ parseInt(caso.categorias_cantidades.split(', ')[index])).toFixed(2) %></td>
         <img src="<%= qrCodeUrl %>" alt="Código QR">
         
         <div>
-            <ul>
-                <li>El cliente se compromete a devolver el material en las mismas condiciones en las 
-que fue entregado, sin daños ni alteraciones.</li>
-                <li>El cliente es responsable del cuidado y conservación del material durante el 
-periodo de alquiler.</li>
-                <li>En caso de daño o pérdida del material, el cliente deberá cubrir el costo total 
-de la reparación o reemplazo del mismo.</li>
-                <li>Está prohibido realizar modificaciones en el material alquilado sin el 
-consentimiento previo y por escrito de la alquiladora.</li>
-                <li>El cliente debe utilizar el material exclusivamente para los fines establecidos y 
-de acuerdo con las instrucciones de uso proporcionadas.</li>
-                <li>En caso de maltrato, uso inapropiado o negligencia, el cliente será responsable 
-de los daños y deberá indemnizar a la alquiladora por los costos derivados de la reparación o 
-reemplazo.</li>
-                <li>El cliente debe informar de inmediato cualquier daño o defecto en el material al 
-momento de la devolución o durante el periodo de alquiler.</li>
-                <li>El material debe ser devuelto en el tiempo acordado. El retraso en la devolución 
-podrá generar cargos adicionales.</li>
-                <li>En caso de no devolver el material alquilado, el cliente se compromete a pagar el 
-costo total del mismo.</li>
-                <li>El cliente es responsable de mantener el material limpio y en buen estado durante 
-su uso.</li>
-            </ul>
+            <p><%= grupo.terminos %></p>
         </div> 
-        <h2>Derechos reservados Alquiladora DAIM.</h2> 
+        <h2>Derechos reservados <%= grupo.nombre_empresa %>.</h2> 
     </div>
 </body>
 </html>
