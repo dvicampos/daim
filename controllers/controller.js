@@ -1,5 +1,10 @@
 const db = require('../models/db');
 const bcrypt = require('bcrypt');
+const pdf = require('html-pdf');
+const QRCode = require('qrcode');
+const multer = require('multer');
+const path = require('path');
+const { createCanvas, loadImage } = require('canvas');
 
 exports.index = (req, res) => {
     if (!req.session.encargado || !req.session.encargado.grupo_id) {
@@ -109,9 +114,6 @@ exports.createGroupPost = (req, res) => {
     );
 };
 
-const multer = require('multer');
-const path = require('path');
-
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'public/uploads');
@@ -198,11 +200,11 @@ exports.updateGroup = (req, res) => {
 };
 
 exports.showGroup = (req, res) => {
-    if (!req.session.encargado || !req.session.encargado.grupo_id) {
-        return res.redirect('/login');
-    }
+    const grupo_id = req.params.id;
 
-    const grupo_id = req.session.encargado.grupo_id;
+    if (!grupo_id) {
+        return res.status(400).send('ID de grupo requerido.');
+    }
 
     const query = 'SELECT * FROM grupos WHERE id = ?';
     db.query(query, [grupo_id], (err, results) => {
@@ -218,6 +220,26 @@ exports.showGroup = (req, res) => {
         const grupo = results[0];
 
         res.render('grupo', { layout: false, grupo });
+    });
+};
+
+exports.downloadQRCode = (req, res) => {
+    if (!req.session.encargado || !req.session.encargado.grupo_id) {
+        return res.redirect('/login');
+    }
+
+    const grupo_id = req.session.encargado.grupo_id;
+    const url = `${req.protocol}://${req.get('host')}/grupo/${grupo_id}`;
+
+    QRCode.toBuffer(url, { type: 'png' }, (err, buffer) => {
+        if (err) {
+            console.error('Error al generar el código QR:', err);
+            return res.status(500).send('Error al generar el código QR.');
+        }
+
+        res.setHeader('Content-Disposition', `attachment; filename=grupo_${grupo_id}_qr.png`);
+        res.setHeader('Content-Type', 'image/png');
+        res.send(buffer);
     });
 };
 
@@ -611,10 +633,8 @@ exports.casos = (req, res) => {
     });
 };
 
-
-
 exports.casoIndividual = (req, res) => {
-    const casoId = req.params.id; 
+    const casoId = req.params.id;
 
     const query = `
         SELECT 
@@ -623,6 +643,9 @@ exports.casoIndividual = (req, res) => {
             clientes.apellido AS cliente_apellido,
             encargados.nombre AS abogado_nombre, 
             encargados.apellido AS abogado_apellido, 
+            grupos.nombre_empresa AS grupo_nombre,
+            grupos.email AS grupo_email,
+            grupos.telefono AS grupo_telefono,
             GROUP_CONCAT(categorias.nombre SEPARATOR ', ') AS categorias_nombres, 
             GROUP_CONCAT(caso_categorias.cantidad SEPARATOR ', ') AS categorias_cantidades, 
             casos.descripcion, 
@@ -636,6 +659,8 @@ exports.casoIndividual = (req, res) => {
             clientes ON casos.cliente_id = clientes.id 
         JOIN 
             encargados ON casos.abogado_id = encargados.id 
+        LEFT JOIN 
+            grupos ON casos.grupo_id = grupos.id
         JOIN 
             caso_categorias ON casos.id = caso_categorias.caso_id 
         JOIN 
@@ -643,14 +668,17 @@ exports.casoIndividual = (req, res) => {
         WHERE 
             casos.id = ?
         GROUP BY 
-            casos.id, clientes.nombre, clientes.apellido, encargados.nombre, encargados.apellido, casos.descripcion, casos.estado, casos.fecha_entrega, casos.fecha_devolucion, casos.precio
+            casos.id, clientes.nombre, clientes.apellido, encargados.nombre, encargados.apellido, grupos.nombre_empresa, grupos.email, grupos.telefono, casos.descripcion, casos.estado, casos.fecha_entrega, casos.fecha_devolucion, casos.precio
     `;
 
     db.query(query, [casoId], (err, results) => {
-        if (err) throw err;
+        if (err) {
+            console.error('Error al obtener el caso:', err);
+            return res.status(500).send('Error al obtener el caso.');
+        }
 
         if (results.length > 0) {
-            res.render('casoIndividual', { caso: results[0], layout: false });
+            res.render('casoIndividual', { caso: results[0], grupo: { nombre_empresa: results[0].grupo_nombre, email: results[0].grupo_email, telefono: results[0].grupo_telefono }, layout: false });
         } else {
             res.status(404).send('Caso no encontrado');
         }
@@ -876,10 +904,6 @@ exports.eliminarCaso = (req, res) => {
     });
 };
 
-
-const pdf = require('html-pdf');
-const QRCode = require('qrcode');
-
 // exports.generarPDF = (req, res) => {
 //     const { id } = req.params;
 
@@ -979,8 +1003,8 @@ exports.generarPDF = (req, res) => {
             }
 
             const caso = results[0];
-            const casoUrl = `https://mexwebtechnological.com/casos/ver/${caso.id}`;
-
+            const casoUrl = `${req.protocol}://${req.get('host')}/casos/ver/${caso.id}`;
+            
             // Ahora obtenemos los datos de la empresa (grupo)
             db.query(`
                 SELECT 

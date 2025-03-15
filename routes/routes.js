@@ -66,8 +66,10 @@ router.get('/eliminar-recordatorio/:id',isAuthenticated, controller.eliminarReco
 // Rutas para Grupos
 router.get('/create-group', controller.createGroup);
 router.post('/create-group', controller.createGroupPost);
-router.get('/edit-group', controller.editGroup);
-router.post('/edit-group', controller.updateGroup);
-router.get('/grupo', controller.showGroup);
+router.get('/edit-group', isAuthenticated, controller.editGroup);
+router.post('/edit-group', isAuthenticated, controller.updateGroup);
+router.get('/grupo/:id', controller.showGroup);
+router.get('/grupos/:id/qr', controller.downloadQRCode);
+
 
 module.exports = router;

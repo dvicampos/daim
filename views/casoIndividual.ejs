@@ -6,7 +6,7 @@
     <title>Detalles de mi pedido</title>
     <link rel="stylesheet" 
 href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="shortcut icon" href="/img/logo_daim.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/logo.png" type="image/x-icon">
     <style>
         body {
             background-color: #f8f9fa;
@@ -36,7 +36,7 @@ href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center">Detalles de mi pedido DAIM</h1>
+        <h1 class="text-center">Detalles de mi pedido <%= grupo.nombre_empresa %></h1>
         
         <div class="case-details">
             <div class="row">
@@ -90,13 +90,13 @@ Date(caso.fecha_devolucion).toLocaleString() %></p>
         <div class="row contact-info bg-success text-white text-center">
             <div class="col-md-6">
                 <p><strong>Número telefónico:</strong> 
-                    <a class="text-light font-italic" href="tel:2461702872">246 170 2872</a>
+                    <a class="text-light font-italic" href="tel:<%= grupo.telefono %>"><%= grupo.telefono %></a>
                 </p>
             </div>
             <div class="col-md-6">
                 <p><strong>Email:</strong> 
                     <a class="text-light font-italic" 
-href="mailto:ixtlapalejic@gmail.com">ixtlapalejic@gmail.com</a>
+href="mailto:<%= grupo.email %>"><%= grupo.email %></a>
                 </p>
             </div>
         </div>

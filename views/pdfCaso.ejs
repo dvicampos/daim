@@ -49,20 +49,17 @@
 <body>
     <div class="container">
         <h1><%= grupo.nombre_empresa %> - Ticket de renta</h1>
-        <% if (grupo.foto_perfil) { %>
-            <img src="/<%= grupo.foto_perfil %>" alt="Foto de <%= grupo.nombre_empresa %>" class="profile-img">
-        <% } %>
         <table class="table-container">
             <tr>
                 <th>Informacion <%= grupo.nombre_empresa %></th>
                 <th>Detalles</th>
             </tr>
             <tr>
-                <td>Teléfono</td>
+                <td>Teléfono de <%= grupo.nombre_empresa %></td>
                 <td><%= grupo.telefono %></td>
             </tr>
             <tr>
-                <td>Correo electrónico</td>
+                <td>Correo electrónico de <%= grupo.nombre_empresa %></td>
                 <td><%= grupo.email %></td>
             </tr>
             <tr>
@@ -70,12 +67,8 @@
                 <td><%= caso.encargado_nombre %> <%= caso.encargado_apellido %></td>
             </tr>
             <tr>
-                <td>Direccion</td>
+                <td>Direccion de <%= grupo.nombre_empresa %></td>
                 <td><%= grupo.ubicacion %></td>
-            </tr>
-            <tr>
-                <td>Sitio web</td>
-                <td><a href="https://mexwebtechnological.com/<%= grupo.id %>"><%= grupo.nombre_empresa %></a></td>
             </tr>
                 <th>Informacion cliente</th>
                 <th>Detalles</th>
