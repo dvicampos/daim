@@ -4,7 +4,8 @@ const controller = require('../controllers/controller');
 const isAuthenticated = require('../middleware/auth');
 
 // Rutas para la página principal
-router.get('/', isAuthenticated, controller.index);
+router.get('/', controller.index);
+router.get('/dashboard', isAuthenticated, controller.dashboard);
 
 // Rutas de registro
 router.get('/register', controller.register);

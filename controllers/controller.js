@@ -7,6 +7,10 @@ const path = require('path');
 const { createCanvas, loadImage } = require('canvas');
 
 exports.index = (req, res) => {
+    res.render('inicio', {layout: false});
+}
+
+exports.dashboard = (req, res) => {
     if (!req.session.encargado || !req.session.encargado.grupo_id) {
         return res.redirect('/login');
     }
@@ -88,7 +92,7 @@ exports.loginPost = (req, res) => {
                 especialidad: encargado.especialidad,
                 grupo_id: encargado.grupo_id,
             };
-            res.redirect('/');
+            res.redirect('/dashboard');
         } else {
             res.redirect('/login');
         }
@@ -194,7 +198,7 @@ exports.updateGroup = (req, res) => {
                 return res.status(500).send('Error al actualizar el grupo.');
             }
 
-            res.redirect('/');
+            res.redirect('/dashboard');
         });
     });
 };
@@ -274,7 +278,7 @@ exports.logout = (req, res) => {
         if (err) {
             console.error(err);
         }
-        res.redirect('/login');
+        res.redirect('/');
     });
 };
 
