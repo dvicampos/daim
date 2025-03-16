@@ -1,11 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,300italic,700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="css/inicio.css">
+	<title>DavaniTechnology</title>
 </head>
 <body>
-    <h1>Hola somos DAVANI</h1>
+	<header>
+		<div class="contenedor">
+			<nav class="planes">
+				<a href="#" id="btn-acerca-de">Acerca de</a>
+				<a href="#" id="btn-planes">Planes</a>
+				<a href="#" id="btn-galeria">Valores</a>
+				<a href="#" id="btn-contacto">Contacto</a>
+			</nav>
+
+			<div class="textos">
+				<h1 class="nombre"><span>Davani</span> Technology</h1>
+				<h3>Ingenieros de software</h3>
+			</div>
+		</div>
+	</header>
+
+	<section class="main">
+		<section class="acerca-de" id="acerca-de">
+			<div class="contenedor">
+				<div class="foto">
+					<img src="img/fp.jpg" alt="">
+				</div>
+				<article>
+					<h3>Acerca de</h3>
+					<p>Somos unos jovenes desarrolladores y entusiastas que buscamos poder apoyar y crear todo lo real que nuestros clientes puedan imaginar.</p>
+				
+					<p>Estamos comprometidos a cumplir con las expectativas de nuestro cliente y que puedan hacerce mas conocidos por medio de su sitio web.</p>
+				</article>
+			</div>
+		</section>
+
+		<section class="planes">
+			<div class="contenedor">
+				<h3 class="titulo" id="planes">Planes</h3>
+				<div class="contenedor-planes">
+					<div class="contenedor-planes2">
+						<article>
+							<p class="categoria">Mensual</p>
+							<div class="plan">
+								<p class="nombre">Plan de cobro cada 31 días</p>
+								<p class="precio">$100</p>
+								<p class="descripcion">Plan que se cobra cada mes y por lo que estara sujeto a cobrarse cada mes.</p>
+							</div>
+						</article>
+						
+						<article>
+							<p class="categoria">Plan anual</p>
+							<div class="plan">
+								<p class="nombre">Plan por 12 meses</p>
+								<p class="precio">$1000</p>
+								<p class="descripcion">Plan de cobro de 12 meses con un descuento del 15% sobre el calculo anual.</p>
+							</div>
+						</article>
+					</div>
+					<div class="nota">
+						<h2 class=titulo-nota>¿Por que confiar en nosotros?</h2>
+						<p>Somos ingenieros capacitados con certificaciones internacionales como Oracle, Google, LPI y Appian. Para nosotros es muy importante la etica profesional por lo que nos basamos en el respeto y la responsabilidad.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="galeria" id="galeria">
+			<div class="foto">
+				<p class="texto">PUNTUALIDAD</p>
+				<img src="img/1.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">RESPETO</p>
+				<img src="img/2.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">COLABORACION</p>
+				<img src="img/3.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">ORGANIZACION</p>
+				<img src="img/4.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">AGILIDAD</p>
+				<img src="img/5.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">INNOVACION</p>
+				<img src="img/6.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">ORIENTACION</p>
+				<img src="img/7.jpg" alt="">
+			</div>
+			<div class="foto">
+				<p class="texto">CALIDAD</p>
+				<img src="img/8.jpg" alt="">
+			</div>
+		</section>
+
+		<section class="contacto" id="contacto">
+			<div class="contenedor">
+				<section class="contacto">
+					<h3 class="titulo">Contacto</h3>
+					<form class="formulario" action="">
+						<input type="text" placeholder="Nombre" name="nombre" required>
+						<input type="email" placeholder="Correo" name="correo" required>
+						<textarea name="mensaje" placeholder="Mensaje:"></textarea>
+						<input class="boton" type="submit" value="Enviar">
+					</form>
+				</section>
+			</div>
+		</section>
+	</section>
+
+	<footer>
+		<div class="contenedor">
+			<div class="copyright">
+				<p>Copyright DavaniTechnology</p>
+			</div>
+		</div>
+	</footer>
+
+	<script src="js/jquery-1.12.3.min.js"></script>
+	<script src="js/parallax.js"></script>
+	<script src="js/efectos.js"></script>
 </body>
 </html>
