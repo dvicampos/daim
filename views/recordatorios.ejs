@@ -44,7 +44,6 @@
                         <th>Fecha de Inicio</th>
                         <th>Fecha de Fin</th>
                         <th>Completado</th>
-                        <th>Grupo</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -55,7 +54,6 @@
                         <td><%= recordatorio.contenido %></td>
                         <td><%= recordatorio.fecha_inicio %></td>
                         <td><%= recordatorio.fecha_fin %></td>
-                        <td><%= recordatorio.grupo_nombre ? recordatorio.grupo_nombre : 'Sin grupo' %></td>
                         <td>
                             <input type="checkbox" disabled <%= recordatorio.completado ? 'checked' : '' %> />
                         </td>

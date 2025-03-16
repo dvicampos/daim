@@ -132,7 +132,7 @@ header .textos h3 {
 	margin-bottom: 50px;
 }
 
-.main .planes .titulo {
+.main .planes .titulo, .main .galeria .titulo, .main .informacion .titulo {
 	font-size: 40px;
 	font-weight: 300;
 	text-align: center;
@@ -206,7 +206,7 @@ header .textos h3 {
 .texto{
 	position: absolute;
 	font-size: 30px;
-	color: #03193d;
+	color: #ffffff;
 	overflow: hidden;
 }
 
@@ -225,7 +225,7 @@ header .textos h3 {
 
 .main .ubicacion {
 	background: #fff;
-	padding: 60px 0;
+	padding: 10%;
 }
 
 .main .ubicacion .titulo {
@@ -445,4 +445,28 @@ footer .copyright {
 		width: 100%;
 		margin-bottom: 10px;
 	}
+}
+.section {
+	display: flex;
+	align-items: center;
+	margin: 5%;
+	padding: 5%;
+}
+
+.section:nth-child(even) {
+	flex-direction: row-reverse;
+}
+
+.text {
+	width: 50%;
+	padding: 20px;
+}
+
+.image {
+	width: 50%;
+}
+
+.image img {
+	max-width: 100%;
+	height: auto;
 }
