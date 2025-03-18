@@ -1460,3 +1460,19 @@ exports.eliminarRecordatorio = (req, res) => {
         res.redirect('/recordatorios');
     });
 };
+
+exports.enviar = (req, res) => {
+    const { nombre, correo, mensaje } = req.body;
+    if (!nombre || !correo || !mensaje) {
+        return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    }
+    const query = "INSERT INTO mensajes (nombre, correo, mensaje) VALUES (?, ?, ?)";
+    db.query(query, [nombre, correo, mensaje], (err, result) => {
+      if (err) {
+        console.error("Error insertando datos:", err);
+        res.status(500).json({ error: "Error al guardar el mensaje" });
+      } else {
+        res.json({ mensaje: "Mensaje enviado correctamente" });
+      }
+    });
+};
