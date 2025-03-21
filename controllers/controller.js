@@ -701,17 +701,18 @@ exports.crearCasoPost = (req, res) => {
     const categoriasArray = Array.isArray(categoria_id) ? categoria_id : [categoria_id];
     const cantidadesArray = Array.isArray(categoria_cantidad) ? categoria_cantidad : [categoria_cantidad];
 
-    db.query('SELECT id, precio, stock FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
+    db.query('SELECT id, nombre, precio, stock FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
         if (err) {
             console.error('Error al obtener precios y stock de categorías:', err);
-            return res.status(500).send('Error al obtener precios y stock de categorías.');
+            // return res.status(500).send('Error al obtener precios y stock de categorías.');
+            return res.render('mensaje', { layout: false, mensaje: 'Error al obtener precios y stock de categorías.', tipo: 'error' });
         }
 
         // Verificar si hay suficiente stock
         for (let i = 0; i < categoriasArray.length; i++) {
             const categoria = resultados.find(c => c.id == categoriasArray[i]);
             if (!categoria || categoria.stock < cantidadesArray[i]) {
-                return res.status(400).send(`Stock insuficiente para la categoría ID ${categoriasArray[i]}`);
+                return res.render('mensaje', { layout: false, mensaje: `Stock insuficiente para la categoría "${categoria ? categoria.nombre : 'desconocida'}"`, tipo: 'warning' });
             }
         }
 
@@ -727,7 +728,8 @@ exports.crearCasoPost = (req, res) => {
             [cliente_id, abogado_id, descripcion, estado, precioTotal, fecha_entrega, fecha_devolucion, grupo_id], (err, result) => {
                 if (err) {
                     console.error('Error al insertar el caso:', err);
-                    return res.status(500).send('Error al insertar el caso.');
+                    return res.render('mensaje', { layout: false, mensaje: 'Error al insertar el caso.', tipo: 'error' });
+                    // return res.status(500).send('Error al insertar el caso.');
                 }
 
                 const casoId = result.insertId;
@@ -840,40 +842,104 @@ exports.crearCasoPost = (req, res) => {
 //     });
 // };
 
+// exports.cerrarPedido = (req, res) => {
+//     const { caso_id } = req.body;
+    
+//     if (!caso_id) {
+//         return res.status(400).send('El ID del caso es requerido.');
+//     }
+
+//     // Verificar si el caso existe y está abierto
+//     db.query('SELECT estado FROM casos WHERE id = ?', [caso_id], (err, resultados) => {
+//         if (err) {
+//             console.error('Error al obtener el caso:', err);
+//             return res.status(500).send('Error al obtener el caso.');
+//         }
+
+//         if (resultados.length === 0) {
+//             return res.status(404).send('Caso no encontrado.');
+//         }
+
+//         if (resultados[0].estado === 'Cerrado') {
+//             return res.status(400).send('El caso ya está cerrado.');
+//         }
+
+//         // Obtener las categorías y cantidades asociadas al caso
+//         db.query('SELECT categoria_id, cantidad FROM caso_categorias WHERE caso_id = ?', [caso_id], (err, categorias) => {
+//             if (err) {
+//                 console.error('Error al obtener las categorías del caso:', err);
+//                 return res.status(500).send('Error al obtener las categorías del caso.');
+//             }
+
+//             if (categorias.length === 0) {
+//                 return res.status(404).send('No hay categorías asociadas a este caso.');
+//             }
+
+//             // Construir las consultas para actualizar el stock
+//             const updateStockQueries = categorias.map(({ categoria_id, cantidad }) => {
+//                 return new Promise((resolve, reject) => {
+//                     db.query('UPDATE categorias SET stock = stock + ? WHERE id = ?', [cantidad, categoria_id], (err) => {
+//                         if (err) {
+//                             console.error(`Error al actualizar el stock de la categoría ${categoria_id}:`, err);
+//                             reject(err);
+//                         } else {
+//                             resolve();
+//                         }
+//                     });
+//                 });
+//             });
+
+//             Promise.all(updateStockQueries)
+//                 .then(() => {
+//                     // Actualizar el estado del caso a "Cerrado"
+//                     db.query('UPDATE casos SET estado = ? WHERE id = ?', ['Cerrado', caso_id], (err) => {
+//                         if (err) {
+//                             console.error('Error al cerrar el caso:', err);
+//                             return res.status(500).send('Error al cerrar el caso.');
+//                         }
+//                         console.log('Caso cerrado y stock actualizado correctamente.');
+//                         res.send('Caso cerrado exitosamente y stock actualizado.');
+//                     });
+//                 })
+//                 .catch(err => {
+//                     console.error('Error al actualizar el stock:', err);
+//                     res.status(500).send('Error al actualizar el stock.');
+//                 });
+//         });
+//     });
+// };
+
 exports.cerrarPedido = (req, res) => {
     const { caso_id } = req.body;
     
     if (!caso_id) {
-        return res.status(400).send('El ID del caso es requerido.');
+        return res.render('mensaje', { layout: false, mensaje: 'El ID del caso es requerido.', tipo: 'error' });
     }
 
-    // Verificar si el caso existe y está abierto
     db.query('SELECT estado FROM casos WHERE id = ?', [caso_id], (err, resultados) => {
         if (err) {
             console.error('Error al obtener el caso:', err);
-            return res.status(500).send('Error al obtener el caso.');
+            return res.render('mensaje', { layout: false, mensaje: 'Error al obtener el caso.', tipo: 'error' });
         }
 
         if (resultados.length === 0) {
-            return res.status(404).send('Caso no encontrado.');
+            return res.render('mensaje', { layout: false, mensaje: 'Caso no encontrado.', tipo: 'error' });
         }
 
         if (resultados[0].estado === 'Cerrado') {
-            return res.status(400).send('El caso ya está cerrado.');
+            return res.render('mensaje', { layout: false, mensaje: 'El caso ya está cerrado.', tipo: 'warning' });
         }
 
-        // Obtener las categorías y cantidades asociadas al caso
         db.query('SELECT categoria_id, cantidad FROM caso_categorias WHERE caso_id = ?', [caso_id], (err, categorias) => {
             if (err) {
                 console.error('Error al obtener las categorías del caso:', err);
-                return res.status(500).send('Error al obtener las categorías del caso.');
+                return res.render('mensaje', { layout: false, mensaje: 'Error al obtener las categorías del caso.', tipo: 'error' });
             }
 
             if (categorias.length === 0) {
-                return res.status(404).send('No hay categorías asociadas a este caso.');
+                return res.render('mensaje', { layout: false, mensaje: 'No hay categorías asociadas a este caso.', tipo: 'warning' });
             }
 
-            // Construir las consultas para actualizar el stock
             const updateStockQueries = categorias.map(({ categoria_id, cantidad }) => {
                 return new Promise((resolve, reject) => {
                     db.query('UPDATE categorias SET stock = stock + ? WHERE id = ?', [cantidad, categoria_id], (err) => {
@@ -889,23 +955,23 @@ exports.cerrarPedido = (req, res) => {
 
             Promise.all(updateStockQueries)
                 .then(() => {
-                    // Actualizar el estado del caso a "Cerrado"
                     db.query('UPDATE casos SET estado = ? WHERE id = ?', ['Cerrado', caso_id], (err) => {
                         if (err) {
                             console.error('Error al cerrar el caso:', err);
-                            return res.status(500).send('Error al cerrar el caso.');
+                            return res.render('mensaje', { layout: false, mensaje: 'Error al cerrar el caso.', tipo: 'error' });
                         }
                         console.log('Caso cerrado y stock actualizado correctamente.');
-                        res.send('Caso cerrado exitosamente y stock actualizado.');
+                        return res.render('mensaje', { layout: false, mensaje: 'Caso cerrado exitosamente y stock actualizado.', tipo: 'success' });
                     });
                 })
                 .catch(err => {
                     console.error('Error al actualizar el stock:', err);
-                    res.status(500).send('Error al actualizar el stock.');
+                    return res.render('mensaje', { layout: false, mensaje: 'Error al actualizar el stock.', tipo: 'error' });
                 });
         });
     });
 };
+
 
 exports.crearCaso = (req, res) => {
     if (!req.session.encargado || !req.session.encargado.grupo_id) {
