@@ -72,6 +72,6 @@ router.get('/edit-group', isAuthenticated, controller.editGroup);
 router.post('/edit-group', isAuthenticated, controller.updateGroup);
 router.get('/grupo/:id', controller.showGroup);
 router.get('/grupos/:id/qr', controller.downloadQRCode);
-
+router.post('/cerrarPedido', controller.cerrarPedido);
 
 module.exports = router;

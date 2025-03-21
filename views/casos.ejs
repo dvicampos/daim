@@ -1,29 +1,47 @@
 <style>
     .badge {
-        font-size: 1.2em; /* Tamaño del texto */
+        font-size: 1.2em;
+        padding: 5px 10px;
+        border-radius: 5px;
     }
     .table-wrapper {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
+    .btn-sm {
+        font-size: 0.9em;
+        padding: 5px 10px;
+        margin: 2px;
+    }
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 3px;
+    }
+    .actions form {
+        display: inline;
+    }
 </style>
+
 <h1 class="text-center">Servicios <i class="fa fa-shopping-cart"></i></h1>
+
 <% if (rol !== 'usuario') { %>
-    <a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar servicios</a>
+    <a href="/casos/crear" class="btn btn-primary mb-3"><i class="fa-solid fa-plus"></i> Agregar servicio</a>
 <% } %>
+
 <div class="table-wrapper">
-    <table class="table table-bordered">
-        <thead>
+    <table class="table table-bordered text-center">
+        <thead class="table-dark">
             <tr>
                 <th>Cliente</th>
                 <th>Vendedor</th>
                 <th>Categorías</th>
-                <th>Ubicacion</th>
-		        <th>Precio</th>
+                <th>Ubicación</th>
+                <th>Precio</th>
                 <th>Fecha de entrega</th>
-                <th>Fecha de devolucion</th>
+                <th>Fecha de devolución</th>
                 <th>Estado</th>
-                <th>Grupo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -34,36 +52,36 @@
                     <td><%= caso.abogado_nombre %></td>
                     <td><%= caso.categorias_nombres %></td>
                     <td><%= caso.descripcion %></td>
-		            <td><%= caso.precio %></td>
-                    <td><%= new Date(caso.fecha_entrega).toLocaleString() %></td> 
-                    <td><%= new Date(caso.fecha_devolucion).toLocaleString() %> </td>
+                    <td>$<%= caso.precio %></td>
+                    <td><%= new Date(caso.fecha_entrega).toLocaleDateString() %></td> 
+                    <td><%= new Date(caso.fecha_devolucion).toLocaleDateString() %></td>
                     <td>
                         <% if (caso.estado === 'Abierto') { %>
-                            <span class="badge badge-success">🔴 Abierto</span>
+                            <span class="badge bg-success">🔴 Abierto</span>
                         <% } else if (caso.estado === 'Cerrado') { %>
-                            <span class="badge badge-secondary">🟢 Cerrado</span>
+                            <span class="badge bg-secondary">🟢 Cerrado</span>
                         <% } else if (caso.estado === 'Pendiente') { %>
-                            <span class="badge badge-warning">🟡 Pendiente</span>
+                            <span class="badge bg-warning">🟡 Pendiente</span>
                         <% } %>
                     </td>
-                    <td><%= caso.grupo_nombre ? caso.grupo_nombre : 'Sin grupo' %></td>
-                    <td>
+                    <td class="actions">
                         <% if (rol === 'admin' || rol === 'editor') { %>
-                            <a href="/casos/editar/<%= caso.caso_id %>" class="btn btn-warning btn-sm m-2">Editar</a>
-                            <a href="/casos/eliminar/<%= caso.caso_id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
+                            <a href="/casos/editar/<%= caso.caso_id %>" class="btn btn-warning btn-sm">✏️</a>
+                            <a href="/casos/eliminar/<%= caso.caso_id %>" class="btn btn-danger btn-sm">🗑️</a>
                         <% } else { %>
-                                <p>Sin permisos</p>
+                            <p class="text-muted">Sin permisos</p>
                         <% } %>
-                        <a href="/generar-pdf/<%= caso.caso_id %>" class="btn btn-info btn-sm m-2">
-                            Ticket
-                        </a>
-                        <a target="_blank" href="/casos/ver/<%= caso.caso_id %>" class="btn btn-success btn-sm m-2">
-                            Ver info
-                        </a>
+                        <a href="/generar-pdf/<%= caso.caso_id %>" class="btn btn-info btn-sm">📄</a>
+                        <a target="_blank" href="/casos/ver/<%= caso.caso_id %>" class="btn btn-success btn-sm">👁️</a>
+                        <form action="/cerrarPedido" method="POST">
+                            <input type="hidden" name="caso_id" value="<%= caso.caso_id %>">
+                            <button type="submit" class="btn btn-dark btn-sm">✅</button>
+                        </form>
                     </td>
                 </tr>
             <% }); %>
         </tbody>
     </table>
 </div>
-<a href="/dashboard" class="btn btn-secondary">Regresar</a>
+
+<a href="/dashboard" class="btn btn-outline-dark mt-3">🔙 Regresar</a>

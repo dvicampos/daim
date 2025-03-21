@@ -689,27 +689,30 @@ exports.casoIndividual = (req, res) => {
     });
 };
 
-
 exports.crearCasoPost = (req, res) => {
     const { cliente_id, abogado_id, descripcion, estado, categoria_id, categoria_cantidad, fecha_entrega, fecha_devolucion } = req.body;
-    
+
     if (!req.session.encargado || !req.session.encargado.grupo_id) {
         console.error('Error: No se encontró grupo_id en la sesión');
         return res.redirect('/crearCliente');
     }
 
     const grupo_id = req.session.encargado.grupo_id;
-
     const categoriasArray = Array.isArray(categoria_id) ? categoria_id : [categoria_id];
     const cantidadesArray = Array.isArray(categoria_cantidad) ? categoria_cantidad : [categoria_cantidad];
 
-    console.log('Categorías seleccionadas:', categoriasArray);
-    console.log('Cantidades seleccionadas:', cantidadesArray);
-
-    db.query('SELECT id, precio FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
+    db.query('SELECT id, precio, stock FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
         if (err) {
-            console.error('Error al obtener precios de categorías:', err);
-            return res.status(500).send('Error al obtener precios de categorías.');
+            console.error('Error al obtener precios y stock de categorías:', err);
+            return res.status(500).send('Error al obtener precios y stock de categorías.');
+        }
+
+        // Verificar si hay suficiente stock
+        for (let i = 0; i < categoriasArray.length; i++) {
+            const categoria = resultados.find(c => c.id == categoriasArray[i]);
+            if (!categoria || categoria.stock < cantidadesArray[i]) {
+                return res.status(400).send(`Stock insuficiente para la categoría ID ${categoriasArray[i]}`);
+            }
         }
 
         let precioTotal = 0;
@@ -719,7 +722,6 @@ exports.crearCasoPost = (req, res) => {
         });
 
         precioTotal = precioTotal.toFixed(2);
-        console.log('Precio total calculado:', precioTotal);
 
         db.query('INSERT INTO casos (cliente_id, abogado_id, descripcion, estado, precio, fecha_entrega, fecha_devolucion, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [cliente_id, abogado_id, descripcion, estado, precioTotal, fecha_entrega, fecha_devolucion, grupo_id], (err, result) => {
@@ -728,34 +730,180 @@ exports.crearCasoPost = (req, res) => {
                     return res.status(500).send('Error al insertar el caso.');
                 }
 
-                console.log('Caso insertado con ID:', result.insertId);
                 const casoId = result.insertId;
-
                 const categoriaQueries = categoriasArray.map((categoriaId, index) => {
                     const cantidad = parseFloat(cantidadesArray[index]);
-                    const grupo_id = req.session.encargado.grupo_id;
+
                     return new Promise((resolve, reject) => {
-                        db.query('INSERT INTO caso_categorias (caso_id, categoria_id, cantidad, grupo_id) VALUES (?, ?, ?, ?)', [casoId, categoriaId, cantidad, grupo_id], (err) => {
-                            if (err) {
-                                console.error('Error al insertar en caso_categorias:', err);
-                                reject(err);
-                            } else {
-                                resolve();
-                            }
-                        });
+                        // Insertar en caso_categorias
+                        db.query('INSERT INTO caso_categorias (caso_id, categoria_id, cantidad, grupo_id) VALUES (?, ?, ?, ?)', 
+                            [casoId, categoriaId, cantidad, grupo_id], (err) => {
+                                if (err) {
+                                    console.error('Error al insertar en caso_categorias:', err);
+                                    reject(err);
+                                } else {
+                                    // Restar el stock en la tabla categorias
+                                    db.query('UPDATE categorias SET stock = stock - ? WHERE id = ?', 
+                                        [cantidad, categoriaId], (err) => {
+                                            if (err) {
+                                                console.error('Error al actualizar el stock:', err);
+                                                reject(err);
+                                            } else {
+                                                resolve();
+                                            }
+                                        });
+                                }
+                            });
                     });
                 });
 
                 Promise.all(categoriaQueries)
                     .then(() => {
-                        console.log('Categorías del caso insertadas correctamente.');
+                        console.log('Caso y stock actualizados correctamente.');
                         res.redirect('/casos');
                     })
                     .catch(err => {
-                        console.error('Error al insertar categorías del caso:', err);
-                        res.status(500).send('Error al insertar categorías del caso.');
+                        console.error('Error al procesar las categorías:', err);
+                        res.status(500).send('Error al procesar las categorías.');
                     });
             });
+    });
+};
+
+
+// exports.crearCasoPost = (req, res) => {
+//     const { cliente_id, abogado_id, descripcion, estado, categoria_id, categoria_cantidad, fecha_entrega, fecha_devolucion } = req.body;
+    
+//     if (!req.session.encargado || !req.session.encargado.grupo_id) {
+//         console.error('Error: No se encontró grupo_id en la sesión');
+//         return res.redirect('/crearCliente');
+//     }
+
+//     const grupo_id = req.session.encargado.grupo_id;
+
+//     const categoriasArray = Array.isArray(categoria_id) ? categoria_id : [categoria_id];
+//     const cantidadesArray = Array.isArray(categoria_cantidad) ? categoria_cantidad : [categoria_cantidad];
+
+//     console.log('Categorías seleccionadas:', categoriasArray);
+//     console.log('Cantidades seleccionadas:', cantidadesArray);
+
+//     db.query('SELECT id, precio FROM categorias WHERE id IN (?)', [categoriasArray], (err, resultados) => {
+//         if (err) {
+//             console.error('Error al obtener precios de categorías:', err);
+//             return res.status(500).send('Error al obtener precios de categorías.');
+//         }
+
+//         let precioTotal = 0;
+//         resultados.forEach((categoria, index) => {
+//             const cantidad = parseFloat(cantidadesArray[index]);
+//             precioTotal += categoria.precio * cantidad;
+//         });
+
+//         precioTotal = precioTotal.toFixed(2);
+//         console.log('Precio total calculado:', precioTotal);
+
+//         db.query('INSERT INTO casos (cliente_id, abogado_id, descripcion, estado, precio, fecha_entrega, fecha_devolucion, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+//             [cliente_id, abogado_id, descripcion, estado, precioTotal, fecha_entrega, fecha_devolucion, grupo_id], (err, result) => {
+//                 if (err) {
+//                     console.error('Error al insertar el caso:', err);
+//                     return res.status(500).send('Error al insertar el caso.');
+//                 }
+
+//                 console.log('Caso insertado con ID:', result.insertId);
+//                 const casoId = result.insertId;
+
+//                 const categoriaQueries = categoriasArray.map((categoriaId, index) => {
+//                     const cantidad = parseFloat(cantidadesArray[index]);
+//                     const grupo_id = req.session.encargado.grupo_id;
+//                     return new Promise((resolve, reject) => {
+//                         db.query('INSERT INTO caso_categorias (caso_id, categoria_id, cantidad, grupo_id) VALUES (?, ?, ?, ?)', [casoId, categoriaId, cantidad, grupo_id], (err) => {
+//                             if (err) {
+//                                 console.error('Error al insertar en caso_categorias:', err);
+//                                 reject(err);
+//                             } else {
+//                                 resolve();
+//                             }
+//                         });
+//                     });
+//                 });
+
+//                 Promise.all(categoriaQueries)
+//                     .then(() => {
+//                         console.log('Categorías del caso insertadas correctamente.');
+//                         res.redirect('/casos');
+//                     })
+//                     .catch(err => {
+//                         console.error('Error al insertar categorías del caso:', err);
+//                         res.status(500).send('Error al insertar categorías del caso.');
+//                     });
+//             });
+//     });
+// };
+
+exports.cerrarPedido = (req, res) => {
+    const { caso_id } = req.body;
+    
+    if (!caso_id) {
+        return res.status(400).send('El ID del caso es requerido.');
+    }
+
+    // Verificar si el caso existe y está abierto
+    db.query('SELECT estado FROM casos WHERE id = ?', [caso_id], (err, resultados) => {
+        if (err) {
+            console.error('Error al obtener el caso:', err);
+            return res.status(500).send('Error al obtener el caso.');
+        }
+
+        if (resultados.length === 0) {
+            return res.status(404).send('Caso no encontrado.');
+        }
+
+        if (resultados[0].estado === 'Cerrado') {
+            return res.status(400).send('El caso ya está cerrado.');
+        }
+
+        // Obtener las categorías y cantidades asociadas al caso
+        db.query('SELECT categoria_id, cantidad FROM caso_categorias WHERE caso_id = ?', [caso_id], (err, categorias) => {
+            if (err) {
+                console.error('Error al obtener las categorías del caso:', err);
+                return res.status(500).send('Error al obtener las categorías del caso.');
+            }
+
+            if (categorias.length === 0) {
+                return res.status(404).send('No hay categorías asociadas a este caso.');
+            }
+
+            // Construir las consultas para actualizar el stock
+            const updateStockQueries = categorias.map(({ categoria_id, cantidad }) => {
+                return new Promise((resolve, reject) => {
+                    db.query('UPDATE categorias SET stock = stock + ? WHERE id = ?', [cantidad, categoria_id], (err) => {
+                        if (err) {
+                            console.error(`Error al actualizar el stock de la categoría ${categoria_id}:`, err);
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            });
+
+            Promise.all(updateStockQueries)
+                .then(() => {
+                    // Actualizar el estado del caso a "Cerrado"
+                    db.query('UPDATE casos SET estado = ? WHERE id = ?', ['Cerrado', caso_id], (err) => {
+                        if (err) {
+                            console.error('Error al cerrar el caso:', err);
+                            return res.status(500).send('Error al cerrar el caso.');
+                        }
+                        console.log('Caso cerrado y stock actualizado correctamente.');
+                        res.send('Caso cerrado exitosamente y stock actualizado.');
+                    });
+                })
+                .catch(err => {
+                    console.error('Error al actualizar el stock:', err);
+                    res.status(500).send('Error al actualizar el stock.');
+                });
+        });
     });
 };
 

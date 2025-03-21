@@ -10,7 +10,7 @@
 <% } %>
 <div class="table-wrapper">
     <table class="table table-bordered">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>Nombre</th>
                 <th>Precio</th>
@@ -38,8 +38,8 @@
                     <td><%= categoria.grupo_nombre ? categoria.grupo_nombre : 'Sin grupo' %></td>
                     <td>
                         <% if (rol === 'admin' || rol === 'editor') { %>
-                            <a href="/categorias/editar/<%= categoria.id %>" class="btn btn-warning btn-sm m-2">Editar</a>
-                            <a href="/categorias/eliminar/<%= categoria.id %>" class="btn btn-danger btn-sm m-2">Eliminar</a>
+                            <a href="/categorias/editar/<%= categoria.id %>" class="btn btn-warning btn-sm m-2">✏️</a>
+                            <a href="/categorias/eliminar/<%= categoria.id %>" class="btn btn-danger btn-sm m-2">🗑️</a>
                         <% } else { %>
                                 <p>Sin permisos</p>
                         <% } %>
@@ -49,4 +49,4 @@
         </tbody>
     </table>
 </div>
-<a href="/dashboard" class="btn btn-secondary">Regresar</a>
+<a href="/dashboard" class="btn btn-outline-dark mt-3">🔙 Regresar</a>
