@@ -247,30 +247,98 @@ exports.downloadQRCode = (req, res) => {
     });
 };
 
+// exports.registerPost = async (req, res) => {
+//     const { nombre, apellido, email, telefono, especialidad, password, grupo_id } = req.body;
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+//         [nombre, apellido, email, telefono, especialidad, hashedPassword, grupo_id], (err, results) => {
+//             if (err) {
+//                 console.error(err);
+//                 return res.redirect('/register');
+//             }
+
+//             const encargadoId = results.insertId;
+//             if (grupo_id) {
+//                 db.query('INSERT INTO grupo_encargado (grupo_id, encargado_id) VALUES (?, ?)',
+//                     [grupo_id, encargadoId],
+//                     (err) => {
+//                         if (err) {
+//                             console.error(err);
+//                         }
+//                     });
+//             }
+//             res.redirect('/login');
+//         });
+// };
+
+const MercadoPago = require("mercadopago");
+
+// Configurar Mercado Pago
+const mercadopago = new MercadoPago.MercadoPagoConfig({
+    accessToken: "APP_USR-4675870761323737-032102-ed9b3ec372a024643003287ad603c6b2-1166673182"
+});
+
+const preferenceClient = new MercadoPago.Preference(mercadopago);
+
 exports.registerPost = async (req, res) => {
     const { nombre, apellido, email, telefono, especialidad, password, grupo_id } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [nombre, apellido, email, telefono, especialidad, hashedPassword, grupo_id], (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.redirect('/register');
-            }
+    const preference = {
+        items: [{
+            title: "Suscripción Mensual",
+            quantity: 1,
+            currency_id: "MXN",
+            unit_price: 1000
+        }],
+        payer: { email },
+        back_urls: {
+            success: `https://davanitechnology.com/payment-success?nombre=${nombre}&apellido=${apellido}&email=${email}&telefono=${telefono}&especialidad=${especialidad}&password=${hashedPassword}&grupo_id=${grupo_id}`,
+            failure: "https://davanitechnology.com//payment-failure",
+            pending: "https://davanitechnology.com//payment-pending"
+        },
+        auto_return: "approved"
+    };
 
-            const encargadoId = results.insertId;
-            if (grupo_id) {
-                db.query('INSERT INTO grupo_encargado (grupo_id, encargado_id) VALUES (?, ?)',
-                    [grupo_id, encargadoId],
-                    (err) => {
-                        if (err) {
-                            console.error(err);
-                        }
-                    });
-            }
-            res.redirect('/login');
+    preferenceClient.create({ body: preference })
+        .then(response => {
+            res.redirect(response.init_point); // Redirige al pago
+        })
+        .catch(error => {
+            console.error(error);
+            res.redirect('/register');
         });
 };
+
+// Manejar el éxito del pago y registrar usuario
+exports.paymentSuccess = async (req, res) => {
+    const { collection_status, nombre, apellido, email, telefono, especialidad, password, grupo_id } = req.query;
+
+    if (collection_status === 'approved') {
+        db.query('INSERT INTO encargados (nombre, apellido, email, telefono, especialidad, password, grupo_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [nombre, apellido, email, telefono, especialidad, password, grupo_id], (err, results) => {
+                if (err) {
+                    console.error(err);
+                    return res.redirect('/register');
+                }
+
+                const encargadoId = results.insertId;
+                if (grupo_id) {
+                    db.query('INSERT INTO grupo_encargado (grupo_id, encargado_id) VALUES (?, ?)',
+                        [grupo_id, encargadoId], (err) => {
+                            if (err) {
+                                console.error(err);
+                            }
+                        });
+                }
+                res.redirect('/login'); // Registro exitoso, redirige a login
+            });
+    } else {
+        res.redirect('/register'); // Si el pago no fue aprobado, vuelve a registrar
+    }
+};
+
 
 // Cerrar sesión
 exports.logout = (req, res) => {

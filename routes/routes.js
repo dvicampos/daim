@@ -73,5 +73,8 @@ router.post('/edit-group', isAuthenticated, controller.updateGroup);
 router.get('/grupo/:id', controller.showGroup);
 router.get('/grupos/:id/qr', controller.downloadQRCode);
 router.post('/cerrarPedido', controller.cerrarPedido);
+router.get("/payment-success", controller.paymentSuccess);
+router.get("/payment-failure", (req, res) => res.send("Pago fallido, intenta nuevamente."));
+router.get("/payment-pending", (req, res) => res.send("Pago en proceso, espera confirmación."));
 
 module.exports = router;

@@ -7,7 +7,7 @@ const ejsLayouts = require('express-ejs-layouts');
 
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 // Configurar EJS
 app.set('view engine', 'ejs');
@@ -32,6 +32,6 @@ app.use(session({
 // Rutas
 app.use('/', routes);
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`);
 });
