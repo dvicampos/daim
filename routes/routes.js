@@ -76,5 +76,10 @@ router.post('/cerrarPedido', controller.cerrarPedido);
 router.get("/payment-success", controller.paymentSuccess);
 router.get("/payment-failure", (req, res) => res.send("Pago fallido, intenta nuevamente."));
 router.get("/payment-pending", (req, res) => res.send("Pago en proceso, espera confirmación."));
+router.get('/forgot-password', controller.showForgotPassword);
+router.post('/forgot-password', controller.forgotPassword);
+router.get('/reset-password/:token', controller.showResetPassword);
+router.post('/reset-password', controller.resetPassword);
+
 
 module.exports = router;

@@ -1554,7 +1554,105 @@ exports.enviar = (req, res) => {
         console.error("Error insertando datos:", err);
         res.status(500).json({ error: "Error al guardar el mensaje" });
       } else {
-        res.json({ mensaje: "Mensaje enviado correctamente" });
+        return res.render('sesiones', { layout: false, mensaje: 'Mensaje enviado correctamente', tipo: 'success' });
+        // res.json({ mensaje: "Mensaje enviado correctamente" });
       }
     });
 };
+
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+// Mostrar formulario de recuperación
+exports.showForgotPassword = (req, res) => {
+    res.render('forgot-password', { layout: false });
+};
+
+// Procesar solicitud de recuperación
+exports.forgotPassword = (req, res) => {
+    const { email } = req.body;
+    
+    db.query('SELECT * FROM encargados WHERE email = ?', [email], (err, results) => {
+        if (err || results.length === 0) {
+            return res.render('sesiones', { layout: false, mensaje: 'Correo no registrado.', tipo: 'error' });
+            // return res.send('Correo no registrado.');
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 3600000).toISOString().slice(0, 19).replace('T', ' ');
+
+        db.query('UPDATE encargados SET reset_token = ?, reset_expires = ? WHERE email = ?', 
+            [token, expires, email], (err) => {
+                if (err) return res.render('sesiones', { layout: false, mensaje: 'Error al enviar el token.', tipo: 'error' });
+                const resetLink = `http://localhost:3000/reset-password/${token}`;
+                sendResetEmail(email, resetLink);
+                return res.render('sesiones', { layout: false, mensaje: 'Revisa tu correo para recuperar tu contraseña.', tipo: 'success' });
+                // res.send('Revisa tu correo para recuperar tu contraseña.');
+        });
+
+    });
+};
+
+// Mostrar formulario para nueva contraseña
+exports.showResetPassword = (req, res) => {
+    const { token } = req.params;
+
+    db.query('SELECT * FROM encargados WHERE reset_token = ? AND reset_expires > NOW()', [token], (err, results) => {
+        if (err) {
+            console.error('Error en la consulta:', err);
+            return res.render('sesiones', { layout: false, mensaje: 'Error al verificar el token.', tipo: 'error' });
+            // return res.send('Error al verificar el token.');
+        }
+        if (results.length === 0) {
+            console.log('Token inválido o expirado:', token);
+            return res.render('sesiones', { layout: false, mensaje: 'Token inválido o expirado.', tipo: 'error' });
+            // return res.send('Token inválido o expirado.');
+        }
+    
+        res.render('reset-password', { layout: false, token });
+    });
+    
+};
+
+// Procesar nueva contraseña
+exports.resetPassword = async (req, res) => {
+    const { token, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.query('SELECT * FROM encargados WHERE reset_token = ? AND reset_expires > NOW()', [token], (err, results) => {
+        if (err || results.length === 0) {
+            return res.render('sesiones', { layout: false, mensaje: 'Token invalido o expirado.', tipo: 'error' });
+            // return res.send('Token inválido o expirado.');
+        }
+
+        const email = results[0].email;
+
+        db.query('UPDATE encargados SET password = ?, reset_token = NULL, reset_expires = NULL WHERE email = ?', 
+            [hashedPassword, email], (err) => {
+                if (err) return res.send('Error al actualizar la contraseña.');
+                return res.render('sesiones', { layout: false, mensaje: 'Revisa tu correo para recuperar tu contraseña.', tipo: 'success' });
+                // res.send('Contraseña restablecida con éxito.');
+            }
+        );
+    });
+};
+
+// Función para enviar email con Nodemailer
+function sendResetEmail(to, link) {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: 'technologydavani@gmail.com', pass: 'armp otcn kfzg mccv' } // ⚠️ Cambia esto por credenciales reales o usa variables de entorno
+    });
+
+    const mailOptions = {
+        from: 'dvicamp@gmail.com',
+        to,
+        subject: 'Recuperación de contraseña',
+        text: `Haz clic en el siguiente enlace para restablecer tu contraseña: ${link}`
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+        if (err) console.log(err);
+        else console.log('Correo enviado: ' + info.response);
+    });
+}
